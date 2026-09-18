@@ -2433,6 +2433,15 @@
     renderGroup();
     Images.init();
 
+    /* STATIC EXPORT FIX: applyAllImages() (which shows the home-page
+       cover video/photo) normally only runs once the live artifact's db
+       capability delivers its first onSnapshot. This static export has
+       no window.claude, so that listener never fires and the baked-in
+       Images.data above was never applied -- the home cover video stayed
+       hidden forever. Apply it immediately since the data is already
+       known upfront. */
+    applyAllImages();
+
     document.getElementById("day-edit-toggle").addEventListener("click", function(){
       if(DayEditor.active){ DayEditor.close(); } else { DayEditor.open(); }
     });
