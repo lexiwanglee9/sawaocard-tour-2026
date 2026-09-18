@@ -319,6 +319,8 @@
   .explore-head{display:flex; align-items:baseline; gap:12px; margin:var(--sp-8) 0 var(--sp-4);}
   .explore-head h2{font-family:var(--f-display); font-weight:400; font-size:clamp(26px,4vw,40px);}
   .explore-sub{font-size:13px; color:var(--ink-muted); margin-bottom:var(--sp-5);}
+  /* Hidden per request: the EXPLORE FREELY / Encore recommendation cards are not shown on the site. */
+  .explore-head, .explore-sub, #day-bonus{display:none!important;}
   .bonus-grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(210px,1fr)); gap:var(--sp-5);}
   .bonus-card{cursor:pointer;}
   .bonus-art{
