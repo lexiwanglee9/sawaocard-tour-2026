@@ -1,0 +1,2593 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Ocard Trip Album</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Work+Sans:wght@400;500;600;700;800&family=Noto+Sans+TC:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
+<style>
+  :root{
+    --void:#0A0B08; --surface:#15160F; --surface-raised:#1E2016; --line:#2B2D20;
+    --ink:#F4F1E4; --ink-muted:#A6A38C; --ink-faint:#85826C;
+    --accent:#FFEA00; --accent-deep:#E6D200; --on-accent:#15160F;
+    --coral:#FF6F4C; --on-coral:#2B0E06;
+    --jungle:#3FA796; --on-jungle:#08211D;
+    --f-display:'Anton','Noto Sans TC',sans-serif;
+    --f-ui:'Work Sans','Noto Sans TC',sans-serif;
+    --f-mono:'Space Mono',ui-monospace,monospace;
+    --r-sm:6px; --r-md:14px; --r-lg:24px; --r-pill:999px;
+    --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:24px; --sp-6:32px; --sp-7:48px; --sp-8:64px;
+    --shadow-card:0 20px 40px -24px rgba(0,0,0,.6);
+    --shadow-player:0 -12px 32px rgba(0,0,0,.5);
+    color-scheme: dark;
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;margin:0;background:var(--void);}
+  body{
+    font-family:var(--f-ui); color:var(--ink); background:var(--void);
+    -webkit-font-smoothing:antialiased; overflow-x:hidden;
+  }
+  h1,h2,h3,p,ul{margin:0;}
+  button{font:inherit;}
+  a{color:inherit;}
+  ::selection{background:var(--accent); color:var(--on-accent);}
+  .zh{font-family:var(--f-ui);}
+  :lang(zh){font-family:'Noto Sans TC', var(--f-ui);}
+
+  #app{min-height:100%; display:flex; flex-direction:column; position:relative;}
+
+  /* ---------- shared bits ---------- */
+  .eyebrow{font-size:11px; font-weight:700; letter-spacing:.18em; color:var(--ink-faint); text-transform:uppercase;}
+  /* The brand name itself is stylized as "SaWaOcard" (mixed case) — this
+     one eyebrow instance opts out of the shared uppercase treatment so
+     that casing renders as typed, instead of forcing SAWAOCARD. */
+  .eyebrow.brand-eyebrow{text-transform:none;}
+  .btn{
+    font-family:var(--f-ui); font-weight:700; font-size:13px; letter-spacing:.08em;
+    border-radius:var(--r-pill); border:1px solid var(--line); background:transparent; color:var(--ink);
+    padding:10px 20px; cursor:pointer; transition:transform .15s ease, background .15s ease, border-color .15s ease;
+  }
+  .btn:hover{border-color:var(--ink-muted);}
+  .btn.primary{background:var(--accent); color:var(--on-accent); border:none;}
+  .btn.primary:hover{transform:scale(1.03);}
+  .btn:focus-visible, .pill:focus-visible, .row:focus-visible, [tabindex]:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+  .gutter{padding-left:max(20px, env(safe-area-inset-left)); padding-right:max(20px, env(safe-area-inset-right));}
+  .wrap{max-width:960px; margin:0 auto; width:100%;}
+
+  /* ---------- HOME / album cover ---------- */
+  .view{display:none;}
+  .view.active{display:block;}
+  #view-home.active{display:flex;}
+  #view-home{
+    flex:1; min-height:100%; position:relative; align-items:center; justify-content:center;
+    text-align:center; overflow:hidden; padding:var(--sp-7) var(--sp-4);
+    background:
+      radial-gradient(120% 70% at 50% 100%, rgba(10,11,8,.1) 0%, var(--void) 70%),
+      linear-gradient(175deg, #2c2410 0%, #1a2a24 42%, var(--void) 100%);
+  }
+  #home-noise{
+    position:absolute; inset:-10%; pointer-events:none; opacity:.55; transition:transform .2s ease-out;
+    background-image:
+      radial-gradient(2px 2px at 12% 22%, rgba(244,241,228,.16) 50%, transparent 51%),
+      radial-gradient(2px 2px at 78% 18%, rgba(244,241,228,.12) 50%, transparent 51%),
+      radial-gradient(2px 2px at 32% 68%, rgba(244,241,228,.14) 50%, transparent 51%),
+      radial-gradient(2px 2px at 85% 72%, rgba(244,241,228,.1) 50%, transparent 51%),
+      radial-gradient(2px 2px at 55% 45%, rgba(244,241,228,.12) 50%, transparent 51%);
+  }
+  #home-disc{
+    position:absolute; right:-18%; top:50%; width:70vmin; height:70vmin; max-width:640px; max-height:640px;
+    transform:translateY(-50%); border-radius:50%;
+    background:conic-gradient(from 200deg, var(--accent), #c9ba00 20%, var(--accent) 40%, #8a7f00 55%, var(--accent) 78%, #c9ba00 100%);
+    box-shadow:0 40px 100px -30px rgba(0,0,0,.7);
+    opacity:.16; filter:saturate(.9); transition:transform .2s ease-out;
+  }
+  .home-inner{position:relative; z-index:1; display:flex; flex-direction:column; align-items:center; gap:var(--sp-3);}
+  .home-mark{font-family:var(--f-display); font-weight:400; font-size:clamp(48px,11vw,104px); line-height:.94; margin:0;}
+  .home-meta{font-family:var(--f-ui); font-weight:600; font-size:13px; letter-spacing:.12em; color:var(--ink-muted); margin-top:var(--sp-2);}
+  .home-dest{margin-top:var(--sp-4); display:flex; flex-direction:column; align-items:center; gap:6px;}
+  .home-dest .eyebrow{color:var(--ink-faint);}
+  .home-dest-name{
+    font-family:var(--f-ui); font-weight:700; font-size:18px; color:var(--ink-muted);
+    border:1px dashed var(--line); border-radius:var(--r-sm); padding:6px 16px;
+  }
+  #play-album{
+    margin-top:var(--sp-6); display:inline-flex; align-items:center; gap:10px;
+    font-size:14px; padding:16px 32px; position:relative;
+  }
+  #play-album svg{width:14px; height:14px;}
+  #play-album::before{
+    content:""; position:absolute; inset:-6px; border-radius:var(--r-pill); border:1px solid var(--accent);
+    opacity:0; animation:pulse-ring 2.4s ease-out infinite;
+  }
+  @keyframes pulse-ring{
+    0%{opacity:.55; transform:scale(.94);}
+    80%{opacity:0; transform:scale(1.18);}
+    100%{opacity:0; transform:scale(1.18);}
+  }
+  .home-hint{margin-top:var(--sp-5); font-size:12px; color:var(--ink-faint); letter-spacing:.04em;}
+
+  #home-cover-bg{
+    position:absolute; inset:0; background-size:cover; background-position:center; opacity:0;
+    transition:opacity .4s ease;
+  }
+  #home-cover-bg.media-on{opacity:1;}
+  #home-cover-bg.has-photo{
+    background-image:linear-gradient(180deg, rgba(10,11,8,.35) 0%, rgba(10,11,8,.55) 55%, var(--void) 100%), var(--cover-url);
+  }
+  body.cover-set #home-disc, body.cover-set #home-noise{opacity:0;}
+
+  /* ---------- Canvas-style media (photo OR silent looping video) shared by
+     the cover, album art and every day-hero backdrop. Default is letterboxed
+     (object-fit:contain) on a solid black field, so the clip is never
+     stretched or cut off — overridden to full-bleed (cover) below on the
+     spots that call for more visual impact. ---------- */
+  .hero-media{
+    position:absolute; inset:0; width:100%; height:100%; object-fit:contain; z-index:0; pointer-events:none;
+    background:#000;
+  }
+  /* Home page background, the inner-page (day) hero banner, and the Album
+     page's art thumbnail all fill their frame edge-to-edge (cover, not
+     letterboxed) for more visual impact, especially on mobile where they
+     should read as full-bleed rather than a boxed clip. */
+  #home-cover-bg .hero-media, #day-hero .hero-media, #album-art .hero-media{ object-fit:cover; }
+  .hero-scrim{
+    position:absolute; inset:0; z-index:1; pointer-events:none; opacity:0; transition:opacity .3s ease;
+    background:linear-gradient(180deg, rgba(10,11,8,.12) 0%, rgba(10,11,8,.34) 55%, rgba(10,11,8,.82) 100%);
+  }
+  #home-cover-bg.media-on:not(.has-photo){background:#000;}
+  #home-cover-bg.media-on:not(.has-photo) .hero-scrim{opacity:1;}
+  .day-hero.media-on:not(.has-photo){background:#000;}
+  .day-hero.media-on:not(.has-photo) .hero-scrim{opacity:1;}
+  .album-art.media-on:not(.has-photo){background:#000;}
+
+  /* ---------- photo-slot upload affordance (used on cover, day hero, schedule + bonus photos) ---------- */
+  .photo-slot{position:relative;}
+  .upload-btn{
+    display:none; position:absolute; right:10px; bottom:10px; z-index:2;
+    align-items:center; gap:6px; font-family:var(--f-ui); font-weight:700; font-size:11px; letter-spacing:.04em;
+    background:rgba(10,11,8,.6); color:var(--ink); border:1px solid rgba(244,241,228,.35); border-radius:var(--r-pill);
+    padding:7px 12px; cursor:pointer; backdrop-filter:blur(4px);
+  }
+  .upload-btn:hover{background:rgba(10,11,8,.8); border-color:var(--accent); color:var(--accent);}
+  .upload-btn:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+  .upload-btn svg{width:13px; height:13px;}
+  body.can-upload .upload-btn{display:inline-flex;}
+  .upload-btn[disabled]{opacity:.6; cursor:wait;}
+  .upload-btn.upload-error{background:rgba(255,111,76,.18); border-color:var(--coral); color:var(--coral);}
+  #img-cover-upload{position:absolute; left:14px; bottom:14px; z-index:2;}
+
+  /* ---------- chrome (topbar + views after entering) ---------- */
+  #chrome{display:none; flex:1; flex-direction:column;}
+  #chrome.active{display:flex;}
+  .topbar{
+    position:sticky; top:0; z-index:20; background:rgba(10,11,8,.86); backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line); display:flex; align-items:center; justify-content:space-between;
+    gap:var(--sp-4); padding:14px 20px; flex-wrap:wrap;
+  }
+  .back-btn{background:none; border:none; color:var(--ink-muted); font-family:var(--f-ui); font-weight:700; font-size:12px; letter-spacing:.08em; cursor:pointer; padding:6px 0;}
+  .back-btn:hover{color:var(--ink);}
+  .topbar-title{font-family:var(--f-ui); font-weight:700; font-size:12px; letter-spacing:.1em; color:var(--ink-faint); text-align:center;}
+  .topbar-title b{color:var(--ink-muted); font-weight:700;}
+  .topnav{display:flex; gap:4px;}
+  .nav-link{
+    background:none; border:none; color:var(--ink-faint); font-family:var(--f-ui); font-weight:700;
+    font-size:11px; letter-spacing:.1em; padding:8px 12px; border-radius:var(--r-pill); cursor:pointer;
+  }
+  .nav-link.on{color:var(--on-accent); background:var(--accent);}
+  .nav-link:not(.on):hover{color:var(--ink);}
+
+  main.view{padding:var(--sp-7) 20px calc(140px + var(--sp-7));}
+
+  /* ---------- ALBUM page ---------- */
+  .album-head{display:flex; gap:var(--sp-6); align-items:flex-end; flex-wrap:wrap; margin-bottom:var(--sp-7);}
+  .album-art{
+    width:220px; height:220px; flex:none; border-radius:var(--r-lg); box-shadow:var(--shadow-cover, 0 32px 64px -20px rgba(0,0,0,.7));
+    background:conic-gradient(from 210deg at 60% 40%, #3a3418, var(--surface-raised) 30%, #16241f 60%, #3a3418 100%);
+    position:relative; overflow:hidden;
+  }
+  .album-art::after{
+    content:""; position:absolute; inset:14%; border-radius:50%;
+    background:radial-gradient(circle at 50% 50%, transparent 0 18%, rgba(10,11,8,.35) 19% 21%, transparent 22% 34%, rgba(10,11,8,.3) 35% 37%, transparent 38% 50%, rgba(10,11,8,.25) 51% 53%, transparent 54%);
+  }
+  .album-art.has-photo{background-image:var(--cover-url); background-size:cover; background-position:center;}
+  .album-art.has-photo::after, .album-art.media-on::after{display:none;}
+  .album-info{flex:1; min-width:220px;}
+  .album-info .eyebrow{color:var(--accent);}
+  .album-info h1{font-family:var(--f-ui); font-weight:800; font-size:clamp(24px,4vw,34px); margin:var(--sp-2) 0;}
+  .album-sub{color:var(--ink-muted); font-size:14px; margin-bottom:var(--sp-4);}
+  .album-actions{display:flex; gap:12px; align-items:center;}
+
+  .section-label{display:flex; align-items:center; gap:10px; margin:0 0 var(--sp-4);}
+  .section-label h2{font-family:var(--f-ui); font-weight:700; font-size:18px;}
+  .section-label .count{font-size:12px; color:var(--ink-faint);}
+
+  .track-list{border-top:1px solid var(--line);}
+  .row{
+    display:flex; align-items:center; gap:18px; padding:16px 6px; border-bottom:1px solid var(--line);
+    border-left:2px solid transparent; cursor:pointer; background:none; width:100%; text-align:left; color:var(--ink);
+  }
+  .row:hover{background:rgba(244,241,228,.03);}
+  .row.active{border-left-color:var(--accent);}
+  .row .num{font-family:var(--f-mono); font-size:13px; font-weight:700; color:var(--ink-faint); width:24px; flex:none;}
+  .row.active .num{color:var(--accent);}
+  .row .rbody{flex:1; min-width:0; display:flex; flex-direction:column; gap:4px;}
+  .row .rtitle{display:block; font-weight:700; font-size:16px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .row .rmeta{display:flex; align-items:center; font-size:12.5px; color:var(--ink-muted);}
+  .row .rplay{width:16px; height:16px; color:var(--accent); opacity:0; transition:opacity .15s ease; flex:none;}
+  .row:hover .rplay, .row.active .rplay{opacity:1;}
+  .row.placeholder .rtitle{color:var(--ink-muted);}
+  .row .badge{font-size:9.5px; font-weight:700; letter-spacing:.08em; color:var(--ink-faint); border:1px solid var(--line); border-radius:var(--r-sm); padding:2px 6px; margin-left:8px;}
+
+  /* ---------- DAY page ---------- */
+  .day-nav{display:flex; gap:8px; overflow-x:auto; padding-bottom:4px; margin-bottom:var(--sp-6); scrollbar-width:none;}
+  .day-nav::-webkit-scrollbar{display:none;}
+  .pill{
+    flex:none; padding:9px 18px; border-radius:var(--r-pill); border:1px solid var(--line); color:var(--ink-muted);
+    font-weight:700; font-size:12px; letter-spacing:.05em; background:none; cursor:pointer;
+  }
+  .pill.active{background:var(--accent); color:var(--on-accent); border-color:transparent;}
+
+  .day-hero{
+    border-radius:var(--r-lg); padding:var(--sp-6); margin-bottom:var(--sp-7); position:relative; overflow:hidden;
+    display:flex; justify-content:space-between; align-items:flex-end; gap:var(--sp-4); flex-wrap:wrap; min-height:180px;
+  }
+  .day-hero.has-photo{
+    background-image:linear-gradient(135deg, rgba(10,11,8,.25), rgba(10,11,8,.78)), var(--cover-url);
+    background-size:cover; background-position:center;
+  }
+  .day-hero .eyebrow{color:rgba(244,241,228,.65); position:relative; z-index:2;}
+  .day-hero h2{font-family:var(--f-display); font-weight:400; font-size:clamp(34px,6vw,56px); line-height:.95; margin:6px 0; position:relative; z-index:2;}
+  .day-hero .day-meta{font-size:13px; color:rgba(244,241,228,.7); position:relative; z-index:2;}
+  .day-hero-nav{display:flex; gap:8px; position:relative; z-index:2;}
+  .day-hero-nav button{
+    width:36px; height:36px; border-radius:50%; border:1px solid rgba(244,241,228,.3); background:rgba(10,11,8,.25);
+    color:var(--ink); display:flex; align-items:center; justify-content:center; cursor:pointer;
+  }
+  .day-hero-nav button:disabled{opacity:.3; cursor:not-allowed;}
+  .day-hero-nav svg{width:16px; height:16px;}
+
+  .timeline{border-left:2px solid var(--line); margin-left:6px; padding-left:0;}
+  .t-item{display:flex; gap:16px; position:relative; padding-bottom:var(--sp-6);}
+  .t-item:last-child{padding-bottom:0;}
+  .t-dot{
+    width:10px; height:10px; border-radius:50%; background:var(--jungle); flex:none; margin-left:-21px; margin-top:6px;
+    box-shadow:0 0 0 4px var(--void);
+  }
+  .t-body{flex:1;}
+  .t-row{display:flex; align-items:baseline; gap:14px; cursor:pointer; width:100%; background:none; border:none; text-align:left; color:var(--ink); padding:2px 0;}
+  .t-time{font-weight:700; font-size:13px; color:var(--ink-muted); flex:none; width:52px;}
+  .t-title{font-family:var(--f-ui); font-weight:600; font-size:16px;}
+  .t-chevron{margin-left:auto; width:14px; height:14px; color:var(--ink-faint); transition:transform .2s ease; flex:none;}
+  .t-item.open .t-chevron{transform:rotate(90deg); color:var(--jungle);}
+  /* max-height is set inline in px by JS (see the .t-row click handler),
+     measured from the panel's real content height each time it opens —
+     a fixed cap here (a previous version used 520px) clips any detail
+     panel whose photo + text ends up taller than that guess, which is
+     easy to hit since the photo alone can run well past 520px at
+     desktop widths (a 16:9 box across a ~1300px content column is
+     already ~730px tall). Keep this collapsed to 0 by default; JS
+     expands it to the exact content height on open. */
+  .t-panel{
+    max-height:0; overflow:hidden; transition:max-height .28s ease;
+  }
+  .t-panel-inner{
+    margin-top:12px; background:var(--surface); border:1px solid var(--line); border-radius:var(--r-md); padding:16px;
+  }
+  .t-photo{width:100%; aspect-ratio:16/9; border-radius:var(--r-sm); background:linear-gradient(135deg,var(--surface-raised),var(--line)); margin-bottom:12px; overflow:hidden;}
+  .t-facts{display:flex; flex-wrap:wrap; gap:8px 20px; font-size:12.5px; color:var(--ink-muted); margin-bottom:10px;}
+  .t-facts b{color:var(--ink); font-weight:600;}
+  .maps-btn{
+    display:inline-flex; align-items:center; gap:6px; font-size:12.5px; font-weight:700; color:var(--jungle);
+    border:1px solid var(--jungle); border-radius:var(--r-pill); padding:7px 14px; text-decoration:none; margin-bottom:12px;
+  }
+  .maps-btn:hover{background:rgba(63,167,150,.12);}
+  .t-note{font-size:12.5px; color:var(--coral); margin-bottom:8px;}
+  .t-why{font-size:13.5px; line-height:1.6; color:var(--ink);}
+
+  /* ---------- Meals strip ---------- */
+  .day-meals{display:flex; flex-wrap:wrap; gap:10px 24px; margin:var(--sp-5) 0; font-size:12.5px; color:var(--ink-muted);}
+  .day-meals span b{display:block; font-size:10px; letter-spacing:.1em; color:var(--ink-faint); font-weight:700; margin-bottom:2px;}
+
+  /* ---------- Self-serve editors (day / info) ---------- */
+  .day-edit-bar{display:none; margin:var(--sp-5) 0;}
+  body.can-upload .day-edit-bar{display:block;}
+  .edit-btn.editing{background:var(--coral); border-color:var(--coral); color:var(--on-coral);}
+  .editor-block, .editor-section{margin-bottom:var(--sp-6);}
+  .editor-section h3{font-family:var(--f-ui); font-size:15px; font-weight:700; margin-bottom:var(--sp-3); color:var(--ink);}
+  .editor-grid2{display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:var(--sp-3);}
+  .editor-row{background:var(--surface); border:1px solid var(--line); border-radius:var(--r-md); padding:var(--sp-3); margin-bottom:var(--sp-3);}
+  .editor-row-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:var(--sp-3);}
+  .editor-field{display:flex; flex-direction:column; gap:4px; font-size:12px; color:var(--ink-muted);}
+  .editor-field.wide{grid-column:1 / -1;}
+  .editor-field.narrow{max-width:130px;}
+  .editor-field input, .editor-field textarea{
+    font-family:var(--f-ui); font-size:13.5px; color:var(--ink); background:var(--void);
+    border:1px solid var(--line); border-radius:var(--r-sm); padding:8px 10px; resize:vertical;
+  }
+  .editor-field input:focus, .editor-field textarea:focus{outline:2px solid var(--accent); outline-offset:1px; border-color:var(--accent);}
+  .editor-del{margin-top:10px; background:none; border:none; color:var(--coral); font-size:12px; font-weight:700; cursor:pointer; padding:4px 0;}
+  .editor-del:hover{text-decoration:underline;}
+  .editor-add{margin-top:4px;}
+  .editor-actions{display:flex; gap:12px; margin-top:var(--sp-5);}
+  /* Previously .btn had no [disabled] styling at all, so clicking Save
+     gave zero visual feedback while a write was in flight (or hung) --
+     from the editor's side, indistinguishable from the click not having
+     registered. */
+  .btn[disabled]{opacity:.55; cursor:wait; transform:none !important;}
+  .editor-save-error{margin-top:10px; font-size:12.5px; color:var(--coral); line-height:1.5;}
+  .editor-save-error[hidden]{display:none;}
+
+  /* ---------- Explore / bonus tracks ---------- */
+  .explore-head{display:flex; align-items:baseline; gap:12px; margin:var(--sp-8) 0 var(--sp-4);}
+  .explore-head h2{font-family:var(--f-display); font-weight:400; font-size:clamp(26px,4vw,40px);}
+  .explore-sub{font-size:13px; color:var(--ink-muted); margin-bottom:var(--sp-5);}
+  .bonus-grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(210px,1fr)); gap:var(--sp-5);}
+  .bonus-card{cursor:pointer;}
+  .bonus-art{
+    position:relative; aspect-ratio:1/1; border-radius:var(--r-md); overflow:hidden;
+    background:linear-gradient(160deg,#3a3418 0%, var(--surface-raised) 55%, #16241f 100%);
+  }
+  .bonus-art::after{
+    content:"EXPLORE →"; position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    color:var(--ink); font-weight:700; font-size:14px; letter-spacing:.06em; background:rgba(10,11,8,0); opacity:0; transition:.2s ease;
+  }
+  .bonus-card:hover .bonus-art::after{opacity:1; background:rgba(10,11,8,.45); color:var(--accent);}
+  .bonus-card:hover .bonus-art{transform:scale(1.015);}
+  .bonus-art{transition:transform .2s ease;}
+  .bonus-foot{padding:10px 2px 0;}
+  .bonus-eyebrow{font-size:10px; font-weight:700; letter-spacing:.14em; color:var(--coral); margin-bottom:4px;}
+  .bonus-title{font-weight:700; font-size:15.5px; margin-bottom:4px;}
+  .bonus-meta{font-size:11.5px; color:var(--ink-muted); margin-bottom:8px;}
+  .bonus-tags{display:flex; gap:6px; flex-wrap:wrap;}
+  .tag{font-size:10px; font-weight:700; color:var(--coral); border:1px solid var(--coral); border-radius:var(--r-pill); padding:3px 9px;}
+
+  /* ---------- Travel info ---------- */
+  .info-intro{margin-bottom:var(--sp-7);}
+  .info-intro .eyebrow{color:var(--jungle);}
+  .info-intro h1{font-family:var(--f-display); font-weight:400; font-size:clamp(30px,5vw,44px); margin:6px 0;}
+  .info-intro p{color:var(--ink-muted); font-size:14.5px; max-width:520px; line-height:1.6;}
+  .info-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:var(--sp-3);}
+  .info-card{background:var(--surface); border:1px solid var(--line); border-radius:var(--r-md); padding:var(--sp-4);}
+  .info-tag{display:inline-block; font-size:9.5px; font-weight:700; letter-spacing:.1em; color:var(--on-jungle); background:var(--jungle); border-radius:var(--r-sm); padding:3px 8px; margin-bottom:10px;}
+  .info-card h3{font-size:14.5px; font-weight:700; margin-bottom:6px;}
+  .info-card p{font-size:13px; color:var(--ink-muted); line-height:1.55;}
+
+  /* ---------- About ---------- */
+  .about-wrap p{font-size:15px; line-height:1.75; color:var(--ink-muted); max-width:560px; margin-bottom:var(--sp-4);}
+  .about-wrap h1{font-family:var(--f-display); font-weight:400; font-size:clamp(30px,5vw,44px); margin-bottom:var(--sp-5);}
+  .credits{margin-top:var(--sp-6); border-top:1px solid var(--line); padding-top:var(--sp-5); display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:var(--sp-4); font-size:12.5px;}
+  .credits div b{display:block; color:var(--ink-faint); font-weight:700; font-size:10.5px; letter-spacing:.1em; margin-bottom:4px;}
+
+  /* ---------- Group Info ---------- */
+  .group-section{margin-bottom:var(--sp-8);}
+  .group-section > h2{font-family:var(--f-display); font-weight:400; font-size:clamp(24px,4vw,34px); margin-bottom:var(--sp-2);}
+  .group-section > p.group-sub{font-size:13px; color:var(--ink-muted); margin-bottom:var(--sp-5);}
+  .roster-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:var(--sp-5);}
+  .roster-card{background:var(--surface); border:1px solid var(--line); border-radius:var(--r-md); padding:var(--sp-4);}
+  .roster-card h3{font-size:15px; font-weight:700; margin-bottom:var(--sp-3); color:var(--accent);}
+  .roster-row{display:flex; align-items:baseline; gap:10px; padding:6px 0; border-bottom:1px solid var(--line); font-size:13px;}
+  .roster-row:last-child{border-bottom:none;}
+  .roster-row .r-no{font-family:var(--f-mono); font-size:11px; color:var(--ink-faint); width:22px; flex:none;}
+  .roster-row .r-name{flex:1; color:var(--ink);}
+  .roster-row .r-diet{font-size:10.5px; font-weight:700; color:var(--coral); border:1px solid var(--coral); border-radius:var(--r-sm); padding:2px 7px; flex:none;}
+  .seating-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:var(--sp-3);}
+  .seating-table{background:var(--surface); border:1px solid var(--line); border-radius:var(--r-md); padding:var(--sp-3);}
+  .seating-table h4{font-size:12.5px; font-weight:700; color:var(--jungle); margin-bottom:8px;}
+  .seating-seat{display:flex; justify-content:space-between; gap:8px; font-size:12px; padding:3px 0; color:var(--ink-muted);}
+  .seating-seat b{color:var(--ink); font-weight:600;}
+
+  /* ---------- Player bar ---------- */
+  #player-bar{
+    position:fixed; left:0; right:0; bottom:0; z-index:30;
+    background:var(--surface-raised); border-top:1px solid var(--line); box-shadow:var(--shadow-player);
+    padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));
+  }
+  #player-bar[hidden]{display:none;}
+  .player-inner{display:flex; align-items:center; gap:20px; max-width:1100px; margin:0 auto;}
+  .p-track{min-width:0; width:150px; flex:none;}
+  .p-eyebrow{font-size:9.5px; font-weight:700; letter-spacing:.14em; color:var(--accent); margin-bottom:2px;}
+  .p-title{font-size:13.5px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .p-title-row{display:flex; align-items:center; gap:5px; min-width:0;}
+  .p-title-row .p-title{flex:1; min-width:0; margin:0;}
+  input.p-title{
+    background:transparent; border:none; border-bottom:1px solid var(--accent); color:var(--ink);
+    font-family:inherit; padding:0 0 1px; outline:none; min-width:0;
+  }
+  .track-edit-btn{
+    display:none; flex:none; background:none; border:none; color:var(--ink-faint); cursor:pointer; padding:2px;
+    align-items:center; justify-content:center;
+  }
+  .track-edit-btn:hover{color:var(--accent);}
+  .track-edit-btn svg{width:11px; height:11px; display:block;}
+  body.can-upload .track-edit-btn{display:inline-flex;}
+  .p-sub{font-size:11px; color:var(--ink-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .lyrics-toggle{
+    display:inline-flex; align-items:center; gap:2px; margin-top:4px; background:none; border:none; cursor:pointer;
+    font-family:var(--f-ui); font-weight:700; font-size:10.5px; letter-spacing:.06em; color:var(--jungle); padding:2px 0;
+  }
+  .lyrics-toggle:hover{color:var(--accent);}
+  .lyrics-toggle svg{width:11px; height:11px; transition:transform .2s ease;}
+  .lyrics-toggle[aria-expanded="true"] svg{transform:rotate(180deg);}
+  .upload-btn.track-upload-btn{position:static; margin-top:6px; font-size:9.5px; padding:5px 9px; gap:4px;}
+  .upload-btn.track-upload-btn svg{width:11px; height:11px;}
+  .p-center{flex:1; display:flex; flex-direction:column; align-items:center; gap:6px; min-width:0;}
+  .transport{display:flex; align-items:center; gap:18px;}
+  .transport button{background:none; border:none; color:var(--ink); cursor:pointer; display:flex; padding:4px;}
+  .transport button:hover{color:var(--accent);}
+  .play-btn{
+    width:34px; height:34px; border-radius:50%; background:var(--accent); color:var(--on-accent) !important;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .transport svg{width:16px; height:16px;}
+  .progress-row{display:flex; align-items:center; gap:10px; width:100%; max-width:520px;}
+  .p-time{font-family:var(--f-mono); font-size:11px; color:var(--ink-muted); width:36px; flex:none;}
+  .p-time.r{text-align:right;}
+  .p-track-bar{flex:1; height:4px; border-radius:var(--r-pill); background:var(--line); position:relative; cursor:pointer;}
+  .p-fill{position:absolute; left:0; top:0; bottom:0; width:0%; background:var(--accent); border-radius:var(--r-pill);}
+  .p-vol{display:none; align-items:center; gap:8px; color:var(--ink-muted); flex:none;}
+  .p-vol svg{width:16px; height:16px;}
+  .vol-track{width:64px; height:4px; border-radius:var(--r-pill); background:var(--line); position:relative; cursor:pointer;}
+  .vol-fill{position:absolute; left:0; top:0; bottom:0; width:70%; background:var(--ink-muted); border-radius:var(--r-pill);}
+
+  /* ---------- Lyrics panel (slides up above the player bar) ----------
+     The header (song title + close button) is a fixed-size flex item,
+     a SIBLING of the scrollable body below it — not a position:sticky
+     element living inside the scrolling container. Sticky-inside-a-
+     flex-item depends on the scroll container being correctly height-
+     constrained (needs an explicit min-height:0 on the flex item, which
+     not every mobile browser/in-app webview gets right), so a long
+     lyrics sheet could push the sticky header out of reach and strand
+     the close button below the fold. Making the header a plain, always-
+     rendered sibling removes that dependency entirely: the header can
+     never scroll out of view, on any browser, regardless of content
+     length or page scroll position. A full-screen backdrop (click/tap
+     to dismiss) is added as a second, even larger way to close the
+     panel that doesn't rely on hitting the small close icon at all. */
+  .lyrics-backdrop{
+    position:fixed; inset:0; z-index:24; background:rgba(10,11,8,.5);
+    opacity:0; transition:opacity .28s ease; pointer-events:none;
+  }
+  .lyrics-backdrop.open{opacity:1; pointer-events:auto;}
+  .lyrics-backdrop[hidden]{display:none;}
+  .lyrics-panel{
+    position:fixed; left:0; right:0; bottom:0; z-index:25; max-width:1100px; margin:0 auto;
+    background:var(--surface-raised); border-top:1px solid var(--line); border-radius:var(--r-lg) var(--r-lg) 0 0;
+    box-shadow:0 -12px 32px rgba(0,0,0,.5);
+    max-height:62vh; transform:translateY(100%); transition:transform .28s ease; will-change:transform;
+    display:flex; flex-direction:column;
+  }
+  .lyrics-panel.open{transform:translateY(0);}
+  .lyrics-panel[hidden]{display:none;}
+  .lyrics-panel-inner{flex:1 1 auto; min-height:0; overflow-y:auto; padding:var(--sp-3) var(--sp-5) calc(120px + env(safe-area-inset-bottom,0px));}
+  .lyrics-head{flex:0 0 auto; display:flex; align-items:flex-start; justify-content:space-between; gap:var(--sp-4); background:var(--surface-raised); padding:var(--sp-5) var(--sp-5) var(--sp-3); border-bottom:1px solid var(--line);}
+  .lyrics-eyebrow{font-size:10px; font-weight:700; letter-spacing:.16em; color:var(--jungle); margin-bottom:4px;}
+  .lyrics-song{font-family:var(--f-display); font-weight:400; font-size:clamp(20px,4vw,28px);}
+  .lyrics-actions{display:flex; align-items:center; gap:10px; flex:none;}
+  .lyrics-edit-btn{display:none;}
+  body.can-upload .lyrics-edit-btn{display:inline-flex;}
+  .lyrics-close{background:none; border:none; color:var(--ink-muted); cursor:pointer; padding:4px; display:flex;}
+  .lyrics-close:hover{color:var(--ink);}
+  .lyrics-close svg{width:16px; height:16px;}
+  .lyrics-text{
+    font-family:var(--f-ui); font-size:15px; line-height:1.9; color:var(--ink); white-space:pre-wrap;
+    word-break:break-word; margin:0;
+  }
+  .lyrics-text.empty{color:var(--ink-faint); font-style:italic;}
+  .lyrics-text .lyric-line{
+    margin:0; opacity:.5; transition:opacity .25s ease, color .25s ease; padding:3px 0;
+  }
+  .lyrics-text .lyric-line.active{
+    opacity:1; color:var(--accent); font-weight:700;
+  }
+  .lyrics-textarea{
+    width:100%; min-height:260px; font-family:var(--f-ui); font-size:14px; line-height:1.8; color:var(--ink);
+    background:var(--void); border:1px solid var(--line); border-radius:var(--r-sm); padding:12px; resize:vertical;
+  }
+  .lyrics-textarea:focus{outline:2px solid var(--accent); outline-offset:1px; border-color:var(--accent);}
+
+  /* ---------- Lyrics tap-to-sync (self-serve, no external tool needed):
+     play the day's track and tap "標記" on each line as it's sung, which
+     records the current player position for that line. Any lines left
+     unmarked just render as plain (unhighlighted) text. ---------- */
+  .lyrics-sync-block{
+    margin-top:var(--sp-4); border-top:1px solid var(--line); padding-top:var(--sp-4);
+  }
+  .lyrics-sync-hint{
+    font-size:12px; color:var(--ink-muted); line-height:1.6; margin-bottom:var(--sp-3);
+  }
+  .lyrics-sync-controls{
+    display:flex; align-items:center; gap:12px; margin-bottom:var(--sp-3); flex-wrap:wrap;
+  }
+  .lyrics-sync-elapsed{
+    font-family:var(--f-mono); font-size:13px; color:var(--ink-muted);
+  }
+  .lyrics-sync-rows{
+    max-height:220px; overflow-y:auto; border:1px solid var(--line); border-radius:var(--r-md); background:var(--void);
+  }
+  .lyrics-sync-row{
+    display:flex; align-items:center; gap:10px; padding:8px 12px; border-bottom:1px solid var(--line); font-size:13px;
+  }
+  .lyrics-sync-row:last-child{border-bottom:none;}
+  .lyrics-sync-row.marked{background:rgba(255,234,0,.06);}
+  .lyrics-sync-linetext{flex:1; min-width:0; color:var(--ink); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .lyrics-sync-linetime{font-family:var(--f-mono); font-size:11.5px; color:var(--ink-faint); width:56px; flex:none; text-align:right;}
+  .lyrics-sync-mark{flex:none; padding:6px 12px; font-size:11px;}
+  .lyrics-sync-clear{flex:none; background:none; border:none; color:var(--coral); cursor:pointer; font-size:13px; padding:2px 4px;}
+  .lyrics-sync-empty{padding:12px; font-size:12.5px; color:var(--ink-faint);}
+
+  @media (min-width:760px){
+    .p-vol{display:flex;}
+  }
+
+  @media (max-width:640px){
+    .album-head{align-items:center; text-align:center; justify-content:center;}
+    .album-actions{justify-content:center;}
+    main.view{padding:var(--sp-6) 16px 150px;}
+    .p-track{width:auto; max-width:110px;}
+    .p-sub{display:none;}
+    .track-upload-btn{display:none !important;}
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:.001ms !important; transition-duration:.001ms !important;}
+  }
+</style>
+
+<div id="app">
+
+  <section id="view-home" class="view active photo-slot">
+    <div id="home-cover-bg">
+      <video id="home-cover-video" class="hero-media" muted loop playsinline autoplay hidden></video>
+      <div class="hero-scrim"></div>
+    </div>
+    <div id="home-noise"></div>
+    <div id="home-disc"></div>
+    <div class="home-inner">
+      <p class="home-mark">SaWaOcard<br>Tour 2026</p>
+      <p class="home-meta">2026 &nbsp;·&nbsp; 5 DAYS &nbsp;·&nbsp; 1 ALBUM &nbsp;·&nbsp; ∞ MEMORIES</p>
+      <div class="home-dest">
+        <span class="eyebrow">Destination</span>
+        <span class="home-dest-name" id="home-dest">[DESTINATION NAME]</span>
+      </div>
+      <button class="btn primary" id="play-album">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 6h-2c0-1.11-.9-2-2-2H8c-1.1 0-2 .89-2 2H4c-1.1 0-2 .9-2 2v3c1.1 0 2 .9 2 2s-.9 2-2 2v3c0 1.1.9 2 2 2h2c0-1.11.9-2 2-2h8c1.1 0 2 .89 2 2h2c1.1 0 2-.9 2-2v-3c-1.1 0-2-.9-2-2s.9-2 2-2V8c0-1.1-.9-2-2-2z"/></svg>
+        立即購票
+      </button>
+      <p class="home-hint">點擊立即購票，開始這趟旅程</p>
+    </div>
+    <button class="upload-btn" id="cover-upload" type="button" data-slot="home">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 5h3l1.5-2h7L17 5h3a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2zm8 3.5A4.5 4.5 0 1 0 12 17a4.5 4.5 0 0 0 0-8.5z"/></svg>
+      <span id="cover-upload-label">上傳封面圖</span>
+    </button>
+  </section>
+
+  <div id="chrome">
+    <header class="topbar">
+      <button class="back-btn" id="btn-back-home">← BACK TO ALBUM</button>
+      <div class="topbar-title">SaWaOcard <b>2026</b></div>
+      <nav class="topnav" id="topnav">
+        <button class="nav-link" data-goto="album">ALBUM</button>
+        <button class="nav-link" data-goto="group">GROUP INFO</button>
+        <button class="nav-link" data-goto="info">TRAVEL INFO</button>
+        <button class="nav-link" data-goto="about">ABOUT</button>
+      </nav>
+    </header>
+
+    <main id="view-album" class="view wrap">
+      <div class="album-head">
+        <div class="album-art photo-slot" id="album-art">
+          <video id="album-art-video" class="hero-media" muted loop playsinline autoplay hidden></video>
+          <button class="upload-btn" id="album-art-upload" type="button" data-slot="home">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 5h3l1.5-2h7L17 5h3a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2zm8 3.5A4.5 4.5 0 1 0 12 17a4.5 4.5 0 0 0 0-8.5z"/></svg>
+          </button>
+        </div>
+        <div class="album-info">
+          <p class="eyebrow brand-eyebrow">SaWaOcard</p>
+          <h1>5 DAYS</h1>
+          <p class="album-sub">2 Locations · 2026 · <span id="album-dest">[DESTINATION NAME]</span></p>
+          <div class="album-actions">
+            <button class="btn primary" id="album-play"><svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor" style="vertical-align:-1px;margin-right:6px"><path d="M8 5v14l11-7z"/></svg>PLAY</button>
+            <button class="btn" data-goto="info">TRAVEL INFO</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-label"><h2>Dates / Locations</h2><span class="count">2 Locations</span></div>
+      <div class="track-list" id="track-list"></div>
+    </main>
+
+    <main id="view-day" class="view wrap">
+      <div class="day-nav" id="day-nav"></div>
+      <div class="day-hero photo-slot" id="day-hero">
+        <video id="day-hero-video" class="hero-media" muted loop playsinline autoplay hidden></video>
+        <div class="hero-scrim"></div>
+        <div>
+          <p class="eyebrow" id="day-eyebrow">TRACK 01</p>
+          <h2 id="day-title">DAY ONE</h2>
+          <p class="day-meta" id="day-meta">[DATE] · [DESTINATION]</p>
+        </div>
+        <div class="day-hero-nav">
+          <button id="day-prev" aria-label="Previous day"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M15 6l-6 6 6 6"/></svg></button>
+          <button id="day-next" aria-label="Next day"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 6l6 6-6 6"/></svg></button>
+        </div>
+        <button class="upload-btn" id="day-hero-upload" type="button" data-slot="">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 5h3l1.5-2h7L17 5h3a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2zm8 3.5A4.5 4.5 0 1 0 12 17a4.5 4.5 0 0 0 0-8.5z"/></svg>
+          <span id="day-hero-upload-label">上傳背景</span>
+        </button>
+      </div>
+
+      <div class="day-meals" id="day-meals"></div>
+
+      <div class="day-edit-bar" id="day-edit-bar">
+        <button class="btn edit-btn" id="day-edit-toggle" type="button">✎ 編輯這天的行程</button>
+      </div>
+
+      <div id="day-readview">
+        <div class="section-label"><h2>Schedule</h2></div>
+        <div class="timeline" id="day-timeline"></div>
+
+        <div class="explore-head"><h2>EXPLORE FREELY</h2></div>
+        <p class="explore-sub">今天行程結束後，如果你還有體力，可以去這裡 — Encores，自由行推薦。</p>
+        <div class="bonus-grid" id="day-bonus"></div>
+      </div>
+      <div id="day-editor" hidden></div>
+    </main>
+
+    <main id="view-group" class="view wrap">
+      <div class="info-intro">
+        <p class="eyebrow">Roster</p>
+        <h1>GROUP INFO</h1>
+        <p>這趟旅程的分團名單與餐敘分桌表，方便大家找到自己的桌次、認識同行的夥伴。</p>
+      </div>
+      <div class="group-section">
+        <h2>分團名單</h2>
+        <p class="group-sub">依旅行社提供的名單整理，特殊餐食僅供飯店與領隊安排參考。</p>
+        <div class="roster-grid" id="roster-grid"></div>
+      </div>
+      <div id="seating-sections"></div>
+    </main>
+
+    <main id="view-info" class="view wrap">
+      <div class="info-intro">
+        <p class="eyebrow">Album Notes</p>
+        <h1>TRAVEL NOTES</h1>
+        <p>Everything you need before pressing play — 集合地點、飯店、航班、交通、緊急聯絡、匯率、天氣、網路、插座、注意事項與行李建議。</p>
+      </div>
+      <div class="day-edit-bar" id="info-edit-bar">
+        <button class="btn edit-btn" id="info-edit-toggle" type="button">✎ 編輯旅遊資訊</button>
+      </div>
+      <div id="info-readview">
+        <div class="info-grid" id="info-grid"></div>
+      </div>
+      <div id="info-editor" hidden></div>
+    </main>
+
+    <main id="view-about" class="view wrap about-wrap">
+      <h1>ABOUT THE TRIP</h1>
+
+      <div class="day-edit-bar" id="about-edit-bar">
+        <button class="btn edit-btn" id="about-edit-toggle" type="button">✎ 編輯關於頁</button>
+      </div>
+
+      <div id="about-readview">
+        <div id="about-p1" class="about-para"></div>
+        <div id="about-p2" class="about-para"></div>
+        <div class="credits">
+          <div><b>Produced by</b><span id="about-produced"></span></div>
+          <div><b>Format</b><span id="about-format"></span></div>
+          <div><b>Location</b><span id="about-dest">[DESTINATION]</span></div>
+          <div><b>Year</b><span id="about-year"></span></div>
+        </div>
+      </div>
+      <div id="about-editor" hidden></div>
+    </main>
+  </div>
+
+  <footer id="player-bar" hidden>
+    <div class="player-inner">
+      <div class="p-track">
+        <p class="p-eyebrow">NOW PLAYING</p>
+        <div class="p-title-row">
+          <p class="p-title" id="p-title">Lalisa Sawadika</p>
+          <input class="p-title" id="p-title-input" type="text" maxlength="60" hidden aria-label="歌曲名稱">
+          <button class="track-edit-btn" id="track-edit-btn" type="button" aria-label="編輯歌曲名稱" title="編輯歌曲名稱">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+          </button>
+        </div>
+        <p class="p-sub" id="p-sub">SaWaOcard</p>
+        <button class="lyrics-toggle" id="lyrics-toggle-btn" type="button" aria-expanded="false" aria-controls="lyrics-panel">
+          <span>歌詞</span>
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5 5 5-5z"/></svg>
+        </button>
+        <button class="upload-btn track-upload-btn" id="track-upload-btn" type="button" data-slot="track_01">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 5h3l1.5-2h7L17 5h3a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2zm8 3.5A4.5 4.5 0 1 0 12 17a4.5 4.5 0 0 0 0-8.5z"/></svg>
+          <span id="track-upload-label">上傳音樂</span>
+        </button>
+      </div>
+      <div class="p-center">
+        <div class="transport">
+          <button id="p-prev" aria-label="Previous"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg></button>
+          <button class="play-btn" id="p-play" aria-label="Play"><svg id="p-play-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>
+          <button id="p-next" aria-label="Next"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 6h2v12h-2zM6 6l8.5 6L6 18z"/></svg></button>
+        </div>
+        <div class="progress-row">
+          <span class="p-time" id="p-elapsed">00:00</span>
+          <div class="p-track-bar" id="p-bar"><div class="p-fill" id="p-fill"></div></div>
+          <span class="p-time r" id="p-total">02:31</span>
+        </div>
+      </div>
+      <div class="p-vol">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 10v4h4l5 5V5L7 10H3z"/></svg>
+        <div class="vol-track" id="vol-bar"><div class="vol-fill" id="vol-fill"></div></div>
+      </div>
+    </div>
+  </footer>
+
+  <div id="lyrics-backdrop" class="lyrics-backdrop" hidden></div>
+
+  <div id="lyrics-panel" class="lyrics-panel" hidden>
+    <div class="lyrics-head">
+      <div>
+        <p class="lyrics-eyebrow">LYRICS</p>
+        <p class="lyrics-song" id="lyrics-song-title"></p>
+      </div>
+      <div class="lyrics-actions">
+        <button class="btn edit-btn lyrics-edit-btn" id="lyrics-edit-toggle" type="button">✎ 編輯歌詞</button>
+        <button class="lyrics-close" id="lyrics-close-btn" type="button" aria-label="關閉歌詞">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.3 5.71L12 12l6.3 6.29-1.41 1.42L10.59 13.4 4.3 19.71 2.89 18.3 9.17 12 2.89 5.71 4.3 4.29l6.29 6.3 6.29-6.3z"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="lyrics-panel-inner">
+      <div id="lyrics-readview">
+        <div class="lyrics-text" id="lyrics-text"></div>
+      </div>
+      <div id="lyrics-editor" hidden>
+        <textarea class="lyrics-textarea" id="lyrics-textarea" placeholder="貼上這首歌的歌詞……"></textarea>
+        <div class="lyrics-sync-block">
+          <p class="lyrics-sync-hint">想讓歌詞跟音樂一起動態顯示嗎？播放音樂，唱到哪一句就按那一句旁邊的「標記」，時間點會自動記住；之後頁面上就會跟著播放進度醒目提示、自動捲動。不想同步也沒關係，歌詞照樣會正常顯示。</p>
+          <div class="lyrics-sync-controls">
+            <button type="button" class="btn" data-action="sync-playpause" id="lyrics-sync-playpause">▶ 播放</button>
+            <span class="lyrics-sync-elapsed" id="lyrics-sync-elapsed">00:00</span>
+            <button type="button" class="btn" data-action="sync-reset-all">重設所有時間點</button>
+          </div>
+          <div class="lyrics-sync-rows" id="lyrics-sync-rows"></div>
+        </div>
+        <div class="editor-actions">
+          <button class="btn primary" data-action="save">儲存</button>
+          <button class="btn" data-action="cancel">取消</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <input type="file" id="img-upload-input" accept="image/*" style="display:none">
+  <video id="track-media" playsinline hidden></video>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* =====================================================================
+     DATA — trip content lives here, separate from rendering. Edit this
+     object (or wire it to a CMS/JSON later) to update the itinerary
+     without touching any of the render/player code below.
+  ===================================================================== */
+  var TRIP = {
+    title: "SaWaOcard",
+    year: 2026,
+    destination: "Hua Hin · Bangkok, Thailand",
+    trackName: "Lalisa Sawadika",
+    days: [
+      {
+        code: "01", label: "DAY ONE", date: "2026/10/26 (一)", destination: "華欣 Hua Hin",
+        placeholder: false,
+        hotel: "華欣安凡尼臻選度假酒店 Avani+ Hua Hin Resort",
+        meals: { b:"敬請自理", l:"泰式餐盒", d:"Air Space Hua Hin（飛航主題復古風玻璃屋餐廳）" },
+        schedule: [
+          { time:"07:30", title:"機場集合", address:"桃園國際機場第二航廈・長榮航空團體櫃檯", duration:"", note:"請攜帶護照，出發當日領隊將於群組通知確切櫃檯編號", reason:"集合完成，準備搭機前往泰國。" },
+          { time:"09:40", title:"BR-201 飛往曼谷", address:"桃園國際機場 → 曼谷國際機場", duration:"3小時55分・12:35 抵達", note:"", reason:"搭乘豪華客機飛往泰國首都曼谷，抵達後專車前往泰國皇室欽點的避暑之地——華欣，這趟旅程正式開啟度假模式。" },
+          { time:"12:35", title:"專車前往拷龍穴", address:"", duration:"約2小時車程（156公里）", note:"", reason:"" },
+          { time:"約14:30", title:"拷龍穴 Khao Luang Cave", address:"碧差汶裡府 七巖", duration:"60–90分鐘", note:"洞穴外有許多野生猴子，請收好眼鏡、帽子等易脫手物件，勿攜帶食物以免被猴子搶奪受傷，尤其請留意小朋友安全", reason:"位於92公尺高的拷龍山上，是七巖所在的碧差汶裡府最重要的石窟，裡面供奉的佛像上刻有泰王拉瑪五世獻給三世及四世的親筆題字。", maps:"Khao Luang Cave Thailand" },
+          { time:"約16:00", title:"前往華欣", address:"", duration:"約1小時車程（59公里）", note:"", reason:"泰國第二大度假海岸城市，原本只是個小漁港，經泰國皇室欽點為避暑之地，成為揚名國際的旅遊勝地。" },
+          { time:"19:00", title:"晚餐：Air Space Hua Hin", address:"", duration:"", note:"飛航主題復古風玻璃屋餐廳", reason:"以特色餐廳為今天畫下句點，正式進入度假模式。" }
+        ],
+        bonus: []
+      },
+      {
+        code: "02", label: "DAY TWO", date: "2026/10/27 (二)", destination: "華欣 Hua Hin",
+        placeholder: false,
+        hotel: "華欣安凡尼臻選度假酒店 Avani+ Hua Hin Resort",
+        meals: { b:"飯店內自助式", l:"自由行敬請自理", d:"自由行敬請自理" },
+        schedule: [
+          { time:"08:00", title:"飯店自助早餐", address:"", duration:"", note:"", reason:"" },
+          { time:"全天", title:"華欣自由行", address:"", duration:"車程約30–40分鐘可達多數景點", note:"費用依當地報名當下為主，建議提前與導遊預約", reason:"今天沒有安排固定行程，可依個人喜好挑選下方 Encore 自費活動，慢慢享受華欣的悠閒步調。" }
+        ],
+        bonus: [
+          { code:"01", title:"Tree Top Adventure Park 樹頂冒險樂園", meta:"700–900 泰銖/位・叢林飛躍體驗", tags:["ADVENTURE","叢林"], maps:"Tree Top Adventure Park Hua Hin" },
+          { code:"02", title:"Vana Nava Waterpark 瓦納納瓦水上樂園", meta:"1200–1400 泰銖/位", tags:["WATERPARK","親子"], maps:"Vana Nava Water Jungle Hua Hin" },
+          { code:"03", title:"Let's Relax Spa 溫泉 & Spa 按摩", meta:"700–2500 泰銖/位・依部位及時間報價", tags:["SPA","放鬆"], maps:"Let's Relax Spa Hua Hin" },
+          { code:"04", title:"Hua-Hin Horse 華欣海灘騎馬", meta:"300–600 泰銖/位・建議與導遊預約", tags:["海灘","騎馬"], maps:"Hua Hin Beach Horse Riding" }
+        ]
+      },
+      {
+        code: "03", label: "DAY THREE", date: "2026/10/28 (三)", destination: "曼谷 Bangkok",
+        placeholder: false,
+        hotel: "曼谷拉差達安凡尼酒店 Avani Ratchada Bangkok Hotel",
+        meals: { b:"飯店內自助式", l:"泰國傳統料理（Kwan Damnoen Restaurant）", d:"自由行敬請自理" },
+        schedule: [
+          { time:"10:00", title:"飯店退房 Check-out", address:"", duration:"", note:"", reason:"" },
+          { time:"10:00", title:"丹嫩莎朵歐式水上市場", address:"", duration:"約2小時", note:"", reason:"典型的歐式水上市場，繁華的小運河不准機械式船隻進入，只容許槳船通行。每天早上7–9點是當地人交易最頻繁的時段，家家戶戶靠水上交易度日，早已練就一身河上掌舵的好身手。", maps:"Damnoen Saduak Floating Market" },
+          { time:"12:00", title:"午餐：Kwan Damnoen Restaurant", address:"", duration:"約1小時", note:"", reason:"泰國傳統料理。" },
+          { time:"13:00", title:"搭船・自由活動", address:"", duration:"約90分鐘", note:"", reason:"水上市場沿岸自由活動時間，可搭乘傳統長尾船遊覽。" },
+          { time:"15:00", title:"前往曼谷飯店 Check-in", address:"", duration:"約1.5小時車程（88公里）", note:"", reason:"" },
+          { time:"17:30", title:"自由行：ICONSIAM 暹羅天地", address:"泰國曼谷昭披耶河畔", duration:"約3.5小時（21:00前返回飯店）", note:"自由參加，請當日16:00前向領隊確認以便安排遊覽車", reason:"斥資超過540億泰銖打造的極奢華購物與文化地標，集結泰國各地小吃與米其林推薦美食，是曼谷最新的購物與文化朝聖地。", maps:"ICONSIAM" }
+        ],
+        bonus: [
+          { code:"01", title:"ICONSIAM 暹羅天地", meta:"昭披耶河畔・奢華購物與文化地標", tags:["購物","美食","地標"], maps:"ICONSIAM" }
+        ]
+      },
+      {
+        code: "04", label: "DAY FOUR", date: "2026/10/29 (四)", destination: "曼谷 Bangkok",
+        placeholder: false,
+        hotel: "曼谷拉差達安凡尼酒店 Avani Ratchada Bangkok Hotel",
+        meals: { b:"飯店內自助式", l:"自由行敬請自理", d:"自由行敬請自理" },
+        schedule: [
+          { time:"08:00", title:"飯店自助早餐", address:"", duration:"", note:"", reason:"" },
+          { time:"全天", title:"曼谷自由逛：商場巡禮 × 經典古蹟 × 文創漫活 × 伴手禮採購", address:"", duration:"全天", note:"午、晚餐敬請自理", reason:"今天放慢腳步，輕鬆自在地享受曼谷的魅力與悠閒。可以在飯店中體驗游泳池、健身房等休閒設施，也可以去附近的時尚百貨街購物、市區漫遊、寺廟文化與商場夜市。" }
+        ],
+        bonus: [
+          { code:"01", title:"Central Rama 9 購物中心", meta:"與飯店共構的 Fortune Town 購物中心對面，步行可達", tags:["購物","美食"], maps:"Central Rama 9" }
+        ]
+      },
+      {
+        code: "05", label: "DAY FIVE", date: "2026/10/30 (五)", destination: "曼谷 Bangkok - 台灣 Taiwan",
+        placeholder: false,
+        hotel: "溫暖的家",
+        meals: { b:"飯店內自助式", l:"機場敬請自理", d:"機上套餐" },
+        schedule: [
+          { time:"08:00", title:"飯店自助早餐・自由探索", address:"", duration:"", note:"", reason:"早晨吃完豐盛早餐後，飯店內自由探索。" },
+          { time:"12:00", title:"專車前往曼谷機場", address:"", duration:"", note:"依約定時間集合", reason:"" },
+          { time:"16:05", title:"BR-706 飛返桃園", address:"曼谷國際機場 → 桃園國際機場", duration:"3小時35分・20:40 抵達", note:"泰國時間比台灣慢1小時", reason:"奧理科技泰國華欣・曼谷之旅，將繼續留在回憶中懷念著，讓這次美妙的旅程畫下美妙的句點。" }
+        ],
+        bonus: []
+      }
+    ],
+    info: [
+      { tag:"集合資訊", title:"集合時間 / 地點", body:"2026/10/26（一）上午07:30前，桃園國際機場第二航廈長榮航空團體櫃檯集合（確認櫃檯編號，出發當日領隊會在群組通知）。" },
+      { tag:"飯店資訊", title:"住宿", body:"華欣｜Avani+ Hua Hin Resort（1499 Phet Kasem Rd, Cha-am, Phetchaburi 77110, Thailand・+66 32 898 989）\n曼谷｜Avani Ratchada Bangkok Hotel（1 Rachadaphisek Road, Dindaeng, Bangkok 10400, Thailand・+66 2 641 1500）" },
+      { tag:"航班資訊", title:"去程 / 回程", body:"去程 BR-201｜10/26 09:40 台北桃園 → 12:35 曼谷\n回程 BR-706｜10/30 16:05 曼谷 → 20:40 台北桃園\n（泰國時間比台灣慢1小時）" },
+      { tag:"交通方式", title:"當地交通", body:"全程專車接送，往返機場、飯店與各景點皆由遊覽車安排，下車前請記得隨身攜帶重要物品。" },
+      { tag:"緊急聯絡", title:"領隊與緊急電話", body:"A團領隊｜吳佳穎 Kelly　0922-224-156\nB團領隊｜劉筱莉 Lili　0970-064-180\n上順旅遊窗口｜駱玉英小姐　02-2517-1157 #211" },
+      { tag:"當地貨幣", title:"匯率與付款", body:"貨幣為泰銖（Baht），1銖=100沙丹。約 1 USD ≈ 33.08 泰銖，1元台幣 ≈ 1.03 泰銖。機場兌換手續費較高，建議於市區換匯或多人一起兌換。" },
+      { tag:"天氣", title:"氣候提醒", body:"泰國屬熱帶性氣候。10月氣溫約24–32°C，仍偶有降雨，建議攜帶夏季棉質衣物、薄外套與輕便雨具。" },
+      { tag:"網路 / SIM", title:"上網方式", body:"建議出發前自行洽詢電信業者申辦泰國漫遊方案，或於當地機場購買 SIM 卡。" },
+      { tag:"插座", title:"電壓與插頭", body:"泰國電壓為220V，插座為兩腳圓形或扁形，建議自備轉接頭；多數飯店不提供牙刷、牙膏、拖鞋等備品，請自行攜帶。" },
+      { tag:"注意事項", title:"泰國入境提醒", body:"入境泰國須於出發前72小時內上網申請「TDAC 泰國數位入境卡」（tdac.immigration.go.th，需以英文填寫），並保留確認 QR Code。海關會隨機抽查，每人身上須準備2萬泰銖等值現金。電子煙在泰國屬非法，切勿攜帶。" },
+      { tag:"行李建議", title:"打包與行李限制", body:"託運行李長寬高總和需203公分以下，經濟艙限重23公斤/1件；手提行李不得超過7公斤，尺寸54×38×23公分內。液體、膠狀、噴霧類須放託運，不可手提超過100ml。行動電源每人限攜帶2個，須手提隨身、不可託運。" },
+      { tag:"旅遊小費", title:"小費參考", body:"行李小費每件20泰銖；房間小費每房20–50泰銖；領隊/導遊/司機小費建議每人每天約200元，全程5天共約3000元。" },
+      { tag:"保險需知", title:"旅遊保險", body:"已為每位貴賓投保旅行責任險新台幣500萬元及意外醫療險20萬元（依旅行業管理規則第五十三條之規定辦理）。" }
+    ]
+  };
+
+  /* Default About-page copy — editable self-serve the same way Day /
+     Travel Info content is (see AboutEditor + Images.saveAbout below). */
+  var ABOUT_DEFAULTS = {
+    p1: "這不是一般旅行社式的行程表，是我們今年寫給整個團隊的一張專輯。五天、一個目的地、無數個會被記住的瞬間 — 這個網站是聽這張專輯的方式，不是看行程表的方式。",
+    p2: "行程內容主要依旅行社提供的手冊整理，日期、班機、飯店與行程原則上以此為準；細節仍可能因當地狀況微調，若有出入以出發前領隊的最新通知為主。有 Ocard 帳號的同事可以直接在頁面上點「編輯」調整或新增內容。",
+    producedBy: "Ocard Lexi",
+    format: "5 Days · 1 Album",
+    year: "2026"
+  };
+
+  /* Group roster + seating charts, as provided by the travel agency —
+     rooming list per team plus the two meal seating charts. Read-only
+     reference data (not part of the self-serve editors above). */
+  var GROUP = {
+    rosterA: [
+      {no:1,name:"林柏翰 Leo"}, {no:2,name:"蔡宜恬"}, {no:3,name:"林芸樂"},
+      {no:4,name:"林家圳 Adam"}, {no:5,name:"謝瀚"}, {no:6,name:"楊怡真 Arisa",diet:"忌生食"},
+      {no:7,name:"張維凱",diet:"忌生食"}, {no:8,name:"徐祥華 Rick"}, {no:9,name:"徐明安"},
+      {no:10,name:"陳紹華 Java"}, {no:11,name:"黃采靚"}, {no:12,name:"何岳軍 Eric"},
+      {no:13,name:"蘇英明",diet:"忌生食"}, {no:14,name:"林之謙 Chien"}, {no:15,name:"藍翊維"},
+      {no:16,name:"張峻瑋 Victor"}, {no:17,name:"李冠融 Roy"}, {no:18,name:"魏銘賢 Duke"},
+      {no:19,name:"王識淵 Andy"}, {no:20,name:"江珮儀 Mo"}, {no:21,name:"李映宜 Iris"},
+      {no:22,name:"渠凡樂"}, {no:23,name:"侯武男 Raindays"}, {no:24,name:"曾姿穎"},
+      {no:25,name:"侯宥妡"}, {no:26,name:"侯宥妤"}, {no:27,name:"朱珮瑜 Chloe",diet:"忌生食"},
+      {no:28,name:"王志均",diet:"忌生食"}, {no:29,name:"饒宗晏 Vic",diet:"忌牛/羊/生食"},
+      {no:30,name:"梁峻源",diet:"忌牛/羊/生食"}, {no:31,name:"彭若婷 Debby"}, {no:32,name:"蔡欣欣 Alanna"},
+      {no:33,name:"蔡秉勳 Terry"}, {no:34,name:"蘇志霖 Tony"}, {no:35,name:"陳可婕 Irene"},
+      {no:36,name:"鍾瀚賢 Adam"}, {no:37,name:"張哲誠 Chris"}, {no:38,name:"林鴻恩 Allen"}
+    ],
+    rosterB: [
+      {no:1,name:"關廸文 Deven"}, {no:2,name:"張芯瑜"}, {no:3,name:"盧怡綾 Hetty",diet:"忌牛/羊"},
+      {no:4,name:"李孟霖"}, {no:5,name:"高宏熙 Stanley"}, {no:6,name:"王宜蓁"},
+      {no:7,name:"莊懋廷 Kevin"}, {no:8,name:"賴佳瑄"}, {no:9,name:"王豐緹 Lexi"},
+      {no:10,name:"劉政穎 Jack"}, {no:11,name:"張瑋玲 A-Niu"}, {no:12,name:"蔡清盈"},
+      {no:13,name:"張育嫚 Tina",diet:"忌生食/魚"}, {no:14,name:"詹孟芸 Jessie",diet:"海鮮/堅果過敏"},
+      {no:15,name:"李亭儀 Lara"}, {no:16,name:"毛思穎 Lydia"}, {no:17,name:"洪嘉昀 Lena"},
+      {no:18,name:"楊子誼 Cathy"}, {no:19,name:"魏維德 Alvin"}, {no:20,name:"黃任遠 Jonathan"},
+      {no:21,name:"陳逸生 Vinek"}, {no:22,name:"孫偉翔 Roland"}, {no:23,name:"謝惠婷 Hui",diet:"蛋奶素"},
+      {no:24,name:"楊家穎 Zoe",diet:"忌羊"}, {no:25,name:"謝湘漪 Vivian",diet:"海鮮過敏"}, {no:26,name:"高慈 Zona"},
+      {no:27,name:"林建甫 Frank"}, {no:28,name:"張宇喆 Jacky"}, {no:29,name:"彭詩婷 Sasha"},
+      {no:30,name:"黃芊文 Abby"}, {no:31,name:"曹昀暐 Caine"}, {no:32,name:"陳怡雯"},
+      {no:33,name:"方盈鈞 Kate"}, {no:34,name:"劉文瑄 Anna"}, {no:35,name:"吳孟儒 Marvin"},
+      {no:36,name:"蔡勇志"}
+    ],
+    seating: [
+      {
+        title:"分桌表（10/26 晚餐）ACE OF HUA HIN",
+        tables:[
+          {label:"第一桌", seats:["陳逸生｜總經理室","謝湘漪｜客戶提升部","黃任遠｜產品開發部","魏維德｜總經理室","彭若婷｜業務部B","蔡欣欣｜業務部B"]},
+          {label:"第二桌", seats:["陳紹華｜產品開發部","黃采靚｜產品開發部眷","侯武男｜產品開發部","曾姿穎｜產品開發部眷","侯宥妡｜產品開發部眷","侯宥妤｜產品開發部眷"]},
+          {label:"第三桌", seats:["王豐緹｜客戶服務部","劉政穎｜產品開發部","劉文瑄｜人力資源部","孫偉翔｜海外事業部","方盈鈞｜財會部"]},
+          {label:"第四桌", seats:["關廸文｜客戶提升部","張芯瑜｜客戶提升部眷","張育嫚｜客戶提升部","毛思穎｜客戶提升部","洪嘉昀｜客戶提升部","楊子誼｜客戶提升部"]},
+          {label:"第五桌", seats:["盧怡綾｜客戶提升部","李孟霖｜客戶提升部眷","彭詩婷｜客戶提升部","黃芊文｜客戶提升部","林建甫｜客戶提升部","張宇喆｜客戶提升部"]},
+          {label:"第六桌", seats:["高慈｜售前規劃及導入顧問部","莊懋廷｜售前規劃及導入顧問部","賴佳瑄｜售前規劃及導入顧問部眷","謝惠婷｜售前規劃及導入顧問部","楊家穎｜售前規劃及導入顧問部"]},
+          {label:"第七桌", seats:["江珮儀｜產品開發部","渠凡樂｜產品開發部眷","李映宜｜產品開發部","林柏翰｜產品開發部","蔡宜恬｜產品開發部眷","林芸樂｜產品開發部眷"]},
+          {label:"第八桌", seats:["林家圳｜產品設計部","謝瀚沽｜產品設計部眷","楊怡真｜產品開發部","張維凱｜產品開發部眷","徐祥華｜產品開發部","徐明安｜產品開發部眷"]},
+          {label:"第九桌", seats:["吳孟儒｜客戶品牌價值發展事業群","蔡勇志｜客戶品牌價值發展事業群","魏銘賢｜數位銷售戰略服務部","張瑋玲｜數位銷售戰略服務部","蔡清盈｜數位銷售戰略服務部眷","張宇喆｜客戶提升部"]},
+          {label:"第十桌", seats:["陳可婕｜業務部D","饒宗晏｜業務部C","梁峻源｜業務部C眷","鍾瀚賢｜業務部D","張哲誠｜業務部D"]},
+          {label:"第十一桌", seats:["朱珮瑜｜業務部C","王志均｜業務部C眷","林鴻恩｜業務部C","蔡秉勳｜業務部A","王識淵｜業務部A","蘇志霖｜業務部B"]},
+          {label:"第十二桌", seats:["何岳軍｜產品開發部","蘇英明｜產品開發部眷","張峻瑋｜產品開發部","李冠融｜產品開發部","林之謙｜產品開發部","藍翊維｜產品開發部眷"]},
+          {label:"第十三桌", seats:["李亭儀｜客戶提升部","高宏熙｜客戶提升部","王宜蓁｜客戶提升部眷","詹孟芸｜管理部","曹昀暐｜財會部","陳怡雯｜財會部眷"]}
+        ]
+      },
+      {
+        title:"分桌表（10/28 午餐）Kwan Damnoen Restaurant",
+        tables:[
+          {label:"第一桌", seats:["陳逸生｜總經理室","謝湘漪｜客戶提升部","黃任遠｜產品開發部","陳紹華｜產品開發部","黃采靚｜產品開發部眷","王豐緹｜客戶服務部","劉政穎｜產品開發部","高慈｜售前規劃及導入顧問部","林家圳｜產品設計部","謝瀚沽｜產品設計部眷"]},
+          {label:"第二桌", seats:["魏維德｜總經理室","侯武男｜產品開發部","曾姿穎｜產品開發部眷","侯宥妡｜產品開發部眷","侯宥妤｜產品開發部眷","劉文瑄｜人力資源部","莊懋廷｜售前規劃及導入顧問部","賴佳瑄｜售前規劃及導入顧問部眷","謝惠婷｜售前規劃及導入顧問部","楊家穎｜售前規劃及導入顧問部"]},
+          {label:"第三桌", seats:["關廸文｜客戶提升部","張芯瑜｜客戶提升部眷","張育嫚｜客戶提升部","盧怡綾｜客戶提升部","李孟霖｜客戶提升部眷","彭詩婷｜客戶提升部","黃芊文｜客戶提升部","林建甫｜客戶提升部","張宇喆｜客戶提升部","李亭儀｜客戶提升部"]},
+          {label:"第四桌", seats:["彭若婷｜業務部B","蔡欣欣｜業務部B","陳可婕｜業務部D","饒宗晏｜業務部C","梁峻源｜業務部C眷","鍾瀚賢｜業務部D","張哲誠｜業務部D","朱珮瑜｜業務部C"]},
+          {label:"第五桌", seats:["孫偉翔｜海外事業部","吳孟儒｜客戶品牌價值發展事業群","蔡勇志｜客戶品牌價值發展事業群","魏銘賢｜數位銷售戰略服務部","張瑋玲｜數位銷售戰略服務部","蔡清盈｜數位銷售戰略服務部眷","蔡秉勳｜業務部A","王識淵｜業務部A","蘇志霖｜業務部B"]},
+          {label:"第六桌", seats:["江珮儀｜產品開發部","渠凡樂｜產品開發部眷","李映宜｜產品開發部","林柏翰｜產品開發部","蔡宜恬｜產品開發部眷","林芸樂｜產品開發部眷","何岳軍｜產品開發部","蘇英明｜產品開發部眷"]},
+          {label:"第七桌", seats:["方盈鈞｜財會部","毛思穎｜客戶提升部","洪嘉昀｜客戶提升部","楊子誼｜客戶提升部","高宏熙｜客戶提升部","王宜蓁｜客戶提升部眷","詹孟芸｜管理部","曹昀暐｜財會部"]},
+          {label:"第八桌", seats:["楊怡真｜產品開發部","張維凱｜產品開發部眷","徐祥華｜產品開發部","徐明安｜產品開發部眷","張峻瑋｜產品開發部","李冠融｜產品開發部","林之謙｜產品開發部","藍翊維｜產品開發部眷"]}
+        ]
+      }
+    ]
+  };
+
+  var DAY_THEMES = [
+    "linear-gradient(120deg, rgba(255,234,0,.16), rgba(63,167,150,.14))",
+    "linear-gradient(120deg, rgba(255,111,76,.16), rgba(255,234,0,.1))",
+    "linear-gradient(120deg, rgba(63,167,150,.18), rgba(255,111,76,.1))",
+    "linear-gradient(120deg, rgba(255,234,0,.12), rgba(255,111,76,.16))",
+    "linear-gradient(120deg, rgba(63,167,150,.12), rgba(255,234,0,.14))"
+  ];
+
+  /* =====================================================================
+     PLAYER — state + transport logic, independent of any page markup.
+  ===================================================================== */
+  var Player = {
+    isPlaying:false, elapsed:0, total:151, dayIndex:0, volume:.7, _tick:null,
+    usingRealMedia:false, els:{}, mediaEl:null,
+    init:function(els){
+      this.els = els;
+      this.mediaEl = els.media || null;
+      var self = this;
+      if(this.mediaEl){
+        this.mediaEl.volume = this.volume;
+        this.mediaEl.addEventListener("loadedmetadata", function(){
+          if(self.usingRealMedia && isFinite(self.mediaEl.duration) && self.mediaEl.duration > 0){
+            self.total = self.mediaEl.duration;
+            self.renderTime();
+          }
+        });
+        this.mediaEl.addEventListener("timeupdate", function(){
+          if(!self.usingRealMedia) return;
+          self.elapsed = self.mediaEl.currentTime;
+          self.renderTime();
+        });
+        this.mediaEl.addEventListener("ended", function(){
+          if(!self.usingRealMedia) return;
+          self.pause();
+          self.elapsed = 0;
+          self.renderTime();
+        });
+      }
+      this.renderTrack();
+      this.renderTime();
+    },
+    show:function(){ this.els.bar.hidden = false; },
+    renderTrack:function(){
+      var d = TRIP.days[this.dayIndex];
+      var name = (typeof Images !== "undefined") ? Images.trackNameFor(d.code, TRIP.trackName) : TRIP.trackName;
+      this.els.title.textContent = name;
+      this.els.sub.textContent = "DAY " + d.code + " — " + TRIP.title;
+      this.refreshTrackSource();
+      if(typeof LyricsPanel !== "undefined") LyricsPanel.refresh();
+    },
+    /** Looks up whether the current day has a real uploaded track
+     * (Images slot "track_<code>", an mp4/webm the viewer supplied).
+     * Swaps the hidden <video> audio engine onto it when present, and
+     * falls back to the simulated timer otherwise — only interrupting
+     * playback when the actual track identity changes. */
+    refreshTrackSource:function(){
+      var d = TRIP.days[this.dayIndex];
+      var entry = (typeof Images !== "undefined") ? Images.entry("track_" + d.code) : null;
+      var mediaEl = this.mediaEl;
+      var changed = false;
+      if(entry){
+        if(mediaEl && mediaEl.dataset.assetId !== entry.id){
+          mediaEl.src = mediaSrc(entry.id);
+          mediaEl.dataset.assetId = entry.id;
+          mediaEl.load();
+          changed = true;
+        }
+        if(!this.usingRealMedia) changed = true;
+        this.usingRealMedia = true;
+      } else {
+        if(this.usingRealMedia){
+          changed = true;
+          if(mediaEl){
+            mediaEl.pause();
+            mediaEl.removeAttribute("src");
+            delete mediaEl.dataset.assetId;
+            mediaEl.load();
+          }
+        }
+        this.usingRealMedia = false;
+      }
+      if(changed){
+        var wasPlaying = this.isPlaying;
+        this.pause();
+        this.elapsed = 0;
+        this.total = 151;
+        this.renderTime();
+        if(wasPlaying) this.play();
+      }
+      this.updateTrackUploadUI(entry);
+    },
+    updateTrackUploadUI:function(entry){
+      var btn = this.els.trackUploadBtn;
+      if(!btn) return;
+      var d = TRIP.days[this.dayIndex];
+      btn.setAttribute("data-slot", "track_" + d.code);
+      if(this.els.trackUploadLabel){
+        this.els.trackUploadLabel.textContent = entry ? "更換音樂" : "上傳音樂";
+      }
+    },
+    renderTime:function(){
+      this.els.elapsed.textContent = fmtTime(this.elapsed);
+      this.els.total.textContent = fmtTime(this.total);
+      var pct = this.total ? Math.min(100, (this.elapsed/this.total)*100) : 0;
+      this.els.fill.style.width = pct + "%";
+      if(typeof LyricsPanel !== "undefined"){
+        LyricsPanel.updateHighlight();
+        LyricsPanel.updateSyncElapsed();
+      }
+    },
+    play:function(){
+      if(this.isPlaying) return;
+      this.isPlaying = true;
+      this.els.playIcon.innerHTML = '<path d="M6 5h4v14H6zm8 0h4v14h-4z"/>';
+      if(this.usingRealMedia && this.mediaEl){
+        var p = this.mediaEl.play();
+        if(p && p["catch"]){ p["catch"](function(){}); }
+        return;
+      }
+      var self = this;
+      this._tick = setInterval(function(){
+        self.elapsed += 1;
+        if(self.elapsed >= self.total){ self.elapsed = self.total; self.pause(); }
+        self.renderTime();
+      }, 1000);
+    },
+    pause:function(){
+      this.isPlaying = false;
+      this.els.playIcon.innerHTML = '<path d="M8 5v14l11-7z"/>';
+      if(this._tick){ clearInterval(this._tick); this._tick = null; }
+      if(this.usingRealMedia && this.mediaEl){ this.mediaEl.pause(); }
+    },
+    toggle:function(){ this.isPlaying ? this.pause() : this.play(); },
+    seekTo:function(pct){
+      this.elapsed = Math.round(this.total*pct);
+      if(this.usingRealMedia && this.mediaEl && isFinite(this.mediaEl.duration) && this.mediaEl.duration > 0){
+        this.mediaEl.currentTime = this.total * pct;
+      }
+      this.renderTime();
+    },
+    setVolume:function(pct){
+      this.volume = pct;
+      this.els.volFill.style.width = (pct*100)+"%";
+      if(this.mediaEl) this.mediaEl.volume = pct;
+    },
+    goToDay:function(i){
+      this.dayIndex = ((i % TRIP.days.length) + TRIP.days.length) % TRIP.days.length;
+      this.elapsed = 0;
+      this.renderTrack();
+      this.renderTime();
+    }
+  };
+  function fmtTime(s){
+    var m = Math.floor(s/60), sec = Math.floor(s%60);
+    return (m<10?"0":"")+m+":"+(sec<10?"0":"")+sec;
+  }
+
+  /* =====================================================================
+     IMAGES — self-serve photo/video uploads, independent of the
+     player/nav above. Uses this artifact's own `assets` (file storage)
+     and `db` (shared, synced record of which asset goes in which slot)
+     capabilities when the viewer's session grants them; otherwise every
+     media slot quietly stays on its placeholder and no upload button is
+     shown. Each stored entry is `{id, type}` (type = the asset's content
+     type, so a slot can tell a photo from a looping video clip apart).
+     Slot keys: "home" (cover, shared by Home + Album art),
+     "day_hero_<code>" (Day-page backdrop — photo OR looping silent
+     video, Spotify-Canvas style), "track_<code>" (that day's real
+     song, uploaded as an mp4/webm — the store has no bare-audio type),
+     "sched_<code>_<i>", "bonus_<code>_<i>" (photo only).
+  ===================================================================== */
+  var VIDEO_SLOTS = { home:true }; // day_hero_* also allowed, checked via prefix below
+  function slotAcceptsVideo(key){
+    return key === "home" || key.indexOf("day_hero_") === 0 || key.indexOf("track_") === 0;
+  }
+  function isVideoType(type){ return !!type && type.indexOf("video/") === 0; }
+  /* STATIC EXPORT NOTE: on the live Claude artifact, every stored image/
+     video entry's `id` is an opaque asset-store id served at
+     "/_blob/<id>". This static export (for GitHub Pages / self-hosting)
+     bakes the same entries in below, but with `id` already set to a
+     relative "assets/<file>" path pointing at the assets/ folder shipped
+     alongside this HTML file. mediaSrc() below serves both shapes so the
+     rest of the code (Images.url, applyMediaSlot, Player) needs no other
+     changes: a baked relative path is used as-is, and (should this file
+     ever run inside Claude again) a bare opaque id still resolves to
+     "/_blob/<id>" exactly as before. */
+  function mediaSrc(id){
+    return id.indexOf("assets/") === 0 ? id : ("/_blob/" + id);
+  }
+
+  /* STATIC EXPORT: baked-in snapshot of the live artifact's saved
+     overrides (about text, day/info/lyrics edits, uploaded photo/video
+     slots, custom track names) as of the export date, so this
+     self-hosted copy shows the real trip content out of the box. There
+     is no `window.claude` here, so Images.init() below is a no-op and
+     these baked values are simply the permanent starting state -- the
+     self-serve editor UI stays hidden (it only appears when the assets
+     capability is granted), which is correct: editing here would have
+     nowhere to save to. */
+  var Images = {
+    data: {"bonus_01_0": {"id": "assets/bonus_01_0.png", "type": "image/png"}, "bonus_01_1": {"id": "assets/bonus_01_1.jpg", "type": "image/jpeg"}, "bonus_01_2": {"id": "assets/bonus_01_2.jpg", "type": "image/jpeg"}, "bonus_01_3": {"id": "assets/bonus_01_3.jpg", "type": "image/jpeg"}, "bonus_02_0": {"id": "assets/bonus_02_0.jpg", "type": "image/jpeg"}, "bonus_02_1": {"id": "assets/bonus_02_1.jpg", "type": "image/jpeg"}, "bonus_02_10": {"id": "assets/bonus_02_10.jpg", "type": "image/jpeg"}, "bonus_02_11": {"id": "assets/bonus_02_11.jpg", "type": "image/jpeg"}, "bonus_02_2": {"id": "assets/bonus_02_2.jpg", "type": "image/jpeg"}, "bonus_02_3": {"id": "assets/bonus_02_3.png", "type": "image/png"}, "bonus_02_4": {"id": "assets/bonus_02_4.jpg", "type": "image/jpeg"}, "bonus_02_5": {"id": "assets/bonus_02_5.jpg", "type": "image/jpeg"}, "bonus_02_6": {"id": "assets/bonus_02_6.jpg", "type": "image/jpeg"}, "bonus_02_7": {"id": "assets/bonus_02_7.webp", "type": "image/webp"}, "bonus_02_8": {"id": "assets/bonus_02_8.jpg", "type": "image/jpeg"}, "bonus_02_9": {"id": "assets/bonus_02_9.jpg", "type": "image/jpeg"}, "bonus_03_0": {"id": "assets/bonus_03_0.jpg", "type": "image/jpeg"}, "bonus_03_1": {"id": "assets/bonus_03_1.webp", "type": "image/webp"}, "bonus_04_0": {"id": "assets/bonus_04_0.jpg", "type": "image/jpeg"}, "bonus_04_1": {"id": "assets/bonus_04_1.jpg", "type": "image/jpeg"}, "bonus_04_2": {"id": "assets/bonus_04_2.jpg", "type": "image/jpeg"}, "bonus_04_3": {"id": "assets/bonus_04_3.jpg", "type": "image/jpeg"}, "bonus_05_0": {"id": "assets/bonus_05_0.webp", "type": "image/webp"}, "day_hero_01": {"id": "assets/day_hero_01.mp4", "type": "video/mp4"}, "day_hero_02": {"id": "assets/day_hero_02.mp4", "type": "video/mp4"}, "day_hero_03": {"id": "assets/day_hero_03.mp4", "type": "video/mp4"}, "day_hero_04": {"id": "assets/day_hero_04.mp4", "type": "video/mp4"}, "day_hero_05": {"id": "assets/day_hero_05.mp4", "type": "video/mp4"}, "home": {"id": "assets/home.mp4", "type": "video/mp4"}, "sched_01_0": {"id": "assets/sched_01_0.jpg", "type": "image/jpeg"}, "sched_01_1": {"id": "assets/sched_01_1.jpg", "type": "image/jpeg"}, "sched_01_2": {"id": "assets/sched_01_2.jpg", "type": "image/jpeg"}, "sched_01_3": {"id": "assets/sched_01_3.jpg", "type": "image/jpeg"}, "sched_01_4": {"id": "assets/sched_01_4.jpg", "type": "image/jpeg"}, "sched_01_5": {"id": "assets/sched_01_5.jpg", "type": "image/jpeg"}, "sched_02_1": {"id": "assets/sched_02_1.jpg", "type": "image/jpeg"}, "sched_03_1": {"id": "assets/sched_03_1.jpg", "type": "image/jpeg"}, "sched_03_2": {"id": "assets/sched_03_2.webp", "type": "image/webp"}, "sched_03_3": {"id": "assets/sched_03_3.jpg", "type": "image/jpeg"}, "sched_03_4": {"id": "assets/sched_03_4.webp", "type": "image/webp"}, "sched_03_5": {"id": "assets/sched_03_5.jpg", "type": "image/jpeg"}, "sched_04_1": {"id": "assets/sched_04_1.jpg", "type": "image/jpeg"}, "sched_05_0": {"id": "assets/sched_05_0.webp", "type": "image/webp"}, "sched_05_1": {"id": "assets/sched_05_1.webp", "type": "image/webp"}, "sched_05_2": {"id": "assets/sched_05_2.webp", "type": "image/webp"}, "track_01": {"id": "assets/track_01.mp4", "type": "video/mp4"}, "track_02": {"id": "assets/track_02.mp4", "type": "video/mp4"}, "track_03": {"id": "assets/track_03.mp4", "type": "video/mp4"}, "track_04": {"id": "assets/track_04.mp4", "type": "video/mp4"}, "track_05": {"id": "assets/track_05.mp4", "type": "video/mp4"}},
+    trackNames: {"01": "Lalisa Sawadika", "02": "หัวหินกับเรา - Hua Hin With Ocard", "03": "ชนแก้วให้สุด - Cheers All Night", "04": "กรุงเทพคืนนี้ — Bangkok Tonight", "05": "ห้าวันที่จำไม่ลืม — Five Days to Remember"},
+    content: {"about": {"format": "5 Days · 1 Album", "p1": "這不是一般旅行社式的行程表，是福委今年寫給 Ocard 的一場巡迴。五天、一個目的地、無數個會被記住的瞬間 。", "p2": "我們為什麼出發？\n\n因為有些日子，值得被記住。\n\n我們每天一起趕著工作、一起解決問題、一起面對那些看似永遠做不完的事情。\n有時候忙到忘了抬頭看看身邊的人，忘了我們其實曾經一起走過這麼多路。\n\n所以這一次，我們把工作暫時留在台灣。\n\n把護照帶上，把行李裝好，\n把那些沒說出口的「辛苦了」、\n沒來得及說的「謝謝你」、\n還有平常藏在忙碌裡的笑聲——\n一起帶去泰國。\n\n從華欣的海風，到曼谷的霓虹；\n從第一杯酒，到最後一個醉醺醺的夜晚；\n從「明天還要早起」到「管他的，再喝一杯」。\n\n我們不只是來旅行。\n\n我們是來把「同事」這兩個字，\n變成一段真正屬於我們的回憶。\n\n也許多年以後，我們會忘記哪一天去了哪裡，\n忘記吃過哪一道菜，\n甚至忘記那晚到底喝了幾杯。\n\n但我們一定會記得——\n\n那一年，Ocard 的我們，曾經一起在泰國笑得很大聲。\n\n所以，這趟旅程不用完美。\n\n可以迷路，可以喝醉，可以唱錯歌，可以凌晨還不想睡。\n\n因為旅行真正珍貴的，\n從來不是去了多少地方，\n而是那段時間裡，\n身邊剛好都是一起走過來的人。\n\n這一次，讓我們放下工作裡的身份，\n不當主管、不當工程師、不當PM、、不當業務、不當客服。\n\n只當一群——\n一起吃、一起玩、一起喝、一起笑，\n一起把青春存檔的人。\n\n🇹🇭 Ocard Thailand Trip 2026 \n\n這不是一次員工旅遊。\n\n這是我們一起寫下的，下一段故事。\n\n敬這趟旅程，\n敬一起並肩作戰的我們。\n也敬未來回頭看時，仍然會笑著說：\n\n「欸，那一年我們真的玩得很瘋。」", "producedBy": "Ocard EWC", "year": "2026 "}, "days": {"01": {"bonus": [{"maps": "https://share.google/enq26mLafV3arnHc1", "meta": "📍Hua Hin Soi 94 (G Hua Hin Resort & Mall 5樓)", "tags": ["酒吧"], "title": "Flow 94"}, {"maps": "https://share.google/bPaZCj8NJ7uRvmHbZ", "meta": "📍ถนนเดชานุชิต ซ. 57 Hua Hin, Hua Hin District, Prachuap Khiri Khan 77110", "tags": ["酒吧"], "title": "Bar Indigo"}, {"maps": "", "meta": "📍11, Poon Suk Road, Hua Hin, Thailand, 77110", "tags": ["酒吧", "夜店", "Hip-hop", "Trap"], "title": "The Blue Monkey 24"}, {"maps": "https://share.google/3vlFQiUl103KK3jSb", "meta": "📍ซ, Hua Hin 72, Hua Hin District, Prachuap Khiri Khan 77110", "tags": ["夜市"], "title": "Hua Hin Night Market"}], "date": "2026/10/26 (一)", "destination": "華欣 Hua Hin", "hotel": "華欣安凡尼臻選度假酒店 Avani+ Hua Hin Resort", "meals": {"b": "敬請自理", "d": "Air Space Hua Hin（飛航主題復古風玻璃屋餐廳）", "l": "泰式餐盒"}, "schedule": [{"address": "桃園國際機場第二航廈・長榮航空團體櫃檯", "duration": "", "maps": "", "note": "請攜帶護照，出發當日領隊將於群組通知確切櫃檯編號", "reason": "集合完成，準備搭機前往泰國。", "time": "07:30", "title": "機場集合"}, {"address": "桃園國際機場 → 曼谷國際機場", "duration": "3小時55分・12:35 抵達", "maps": "", "note": "", "reason": "搭乘豪華客機飛往泰國首都曼谷，抵達後專車前往泰國皇室欽點的避暑之地——華欣，這趟旅程正式開啟度假模式。", "time": "09:40", "title": "BR-201 飛往曼谷"}, {"address": "", "duration": "約2小時車程（156公里）", "maps": "", "note": "", "reason": "", "time": "12:35", "title": "專車前往拷龍穴"}, {"address": "碧差汶裡府 七巖", "duration": "60–90分鐘", "maps": "Khao Luang Cave Thailand", "note": "洞穴外有許多野生猴子，請收好眼鏡、帽子等易脫手物件，勿攜帶食物以免被猴子搶奪受傷，尤其請留意小朋友安全", "reason": "位於92公尺高的拷龍山上，是七巖所在的碧差汶裡府最重要的石窟，裡面供奉的佛像上刻有泰王拉瑪五世獻給三世及四世的親筆題字。", "time": "約14:30", "title": "拷龍穴 Khao Luang Cave"}, {"address": "", "duration": "約1小時車程（59公里）", "maps": "", "note": "", "reason": "泰國第二大度假海岸城市，原本只是個小漁港，經泰國皇室欽點為避暑之地，成為揚名國際的旅遊勝地。", "time": "約16:00", "title": "前往華欣"}, {"address": "", "duration": "", "maps": "https://share.google/NBLWUkX7iyQNraxQ2", "note": "飛航主題復古風玻璃屋餐廳", "reason": "以特色餐廳為今天畫下句點，正式進入度假模式。", "time": "19:00", "title": "晚餐：Air Space Hua Hin"}]}, "02": {"bonus": [{"maps": "https://share.google/aWOJYT1C8TRe8QRk0", "meta": "700–900 泰銖/位・叢林飛躍體驗", "tags": ["ADVENTURE", "叢林"], "title": "Tree Top Adventure Park 樹頂冒險樂園"}, {"maps": "https://share.google/5cZR01mQMgPVtZfut", "meta": "1200–1400 泰銖/位", "tags": ["WATERPARK", "親子"], "title": "Vana Nava Waterpark 瓦納納瓦水上樂園"}, {"maps": "https://share.google/AjxWJenDxgQcZ5wKR", "meta": "700–2500 泰銖/位・依部位及時間報價", "tags": ["SPA", "放鬆"], "title": "Let's Relax Spa 溫泉 & Spa 按摩"}, {"maps": "", "meta": "300–600 泰銖/位・建議與導遊預約", "tags": ["海灘", "騎馬"], "title": "Hua-Hin Horse 華欣海灘騎馬"}, {"maps": "https://share.google/z5RhVo9wx1FEve9I2", "meta": "📍35 36/36 ถนน Soi Hua Hin-Huay Mongkol 23, Hua Hin, Hua Hin District, Prachuap Khiri Khan 77110", "tags": ["咖啡廳", "網美照"], "title": "STICKY Coffee"}, {"maps": "https://share.google/Zdc3GNvvM8LxrbSww", "meta": "📍91, 29 Hua Hin-Khao, Nong Kae, Hua Hin District, Prachuap Khiri Khan 77110", "tags": ["按摩", "全球前五"], "title": "THE BARAI SPA"}, {"maps": "https://share.google/VIc8920y00BtT8wlq", "meta": "📍22/65 Naeb Kaehat Rd Hua Hin District, Prachuap Khiri Khan 77110", "tags": ["泰式", "海景餐廳"], "title": "Oceanside beach club & restaurant"}, {"maps": "https://share.google/3fhrdob1koZiTWOsi", "meta": "📍3/107 ถนน คันคลอง Hua Hin, Hua Hin District, Prachuap Khiri Khan 77110泰國", "tags": ["在地人夜市"], "title": "Pae Mai Tuesday Market"}, {"maps": "https://share.google/rOTEmCoPsFYZh7MqV", "meta": "📍Thailand, Hua Hin 27 Alley, Tambon Hua Hin, Amphoe, Prachuap Khiri Khan 77110", "tags": ["購物", "手作店", "草編"], "title": "Baanstraw"}, {"maps": "https://share.google/YJqTUz6vRUlmhVYcp", "meta": "📍4 57 Naebkehardt Rd, Hua Hin, Hua Hin District, Prachuap Khiri Khan 77110", "tags": ["咖啡廳", "Take Away Only"], "title": "SRNA Coffee "}, {"maps": "https://share.google/jAmmbNbzYjYsvaMnj", "meta": "📍29 4 Naebkehardt Rd, Hua Hin, Hua Hin District, Prachuap Khiri Khan 77110", "tags": ["駐唱", "餐酒館"], "title": "Three Dots & A Dash Huahin"}, {"maps": "https://share.google/MJ0qq9n1VG83Y7qf7", "meta": "📍234/1 Phet Kasem Rd, Hua Hin, Hua Hin District, Prachuap Khiri Khan 77110", "tags": ["花錢", "購物中心"], "title": "Hua Hin Market Village"}], "date": "2026/10/27 (二)", "destination": "華欣 Hua Hin", "hotel": "華欣安凡尼臻選度假酒店 Avani+ Hua Hin Resort", "meals": {"b": "飯店內自助式", "d": "自由行敬請自理", "l": "自由行敬請自理"}, "schedule": [{"address": "", "duration": "", "maps": "", "note": "", "reason": "", "time": "08:00", "title": "飯店自助早餐"}, {"address": "", "duration": "", "maps": "", "note": "費用依當地報名當下為主，建議提前與導遊預約", "reason": "今天沒有安排固定行程，可依個人喜好挑選下方 Bonus Track 自費活動，慢慢享受華欣的悠閒步調。", "time": "全天", "title": "華欣自由行"}]}, "03": {"bonus": [{"maps": "https://share.google/CVJzlpMaH0UdFzUEl", "meta": "昭披耶河畔・奢華購物與文化地標", "tags": ["購物", "美食"], "title": "ICONSIAM 暹羅天地"}, {"maps": "https://share.google/AFPOMFwEJ5Ua3WwqN", "meta": "泰國極具代表性的殿堂級大型電子音樂（EDM）夜店，曾多次入選 DJ Mag 全球百大夜店之列。它以世界級的頂尖音響設備、震撼的燈光視覺效果以及可容納高達 2,500 人的超大挑高舞池聞名，經常邀請如 Skrillex、Alan Walker、Steve Aoki 等國際百大 DJ 蒞臨演出。", "tags": ["夜店", "不醉不歸", "爛醉不累"], "title": "ONYX BANGKOK"}], "date": "2026/10/28 (三)", "destination": "曼谷 Bangkok", "hotel": "曼谷拉差達安凡尼酒店 Avani Ratchada Bangkok Hotel", "meals": {"b": "飯店內自助式", "d": "自由行敬請自理", "l": "泰國傳統料理（Kwan Damnoen Restaurant）"}, "schedule": [{"address": "", "duration": "", "maps": "", "note": "", "reason": "", "time": "10:00", "title": "飯店退房 Check-out"}, {"address": "", "duration": "約2小時", "maps": "https://maps.app.goo.gl/AxYoDhR8TWgBT78j8", "note": "", "reason": "典型的歐式水上市場，繁華的小運河不准機械式船隻進入，只容許槳船通行。每天早上7–9點是當地人交易最頻繁的時段，家家戶戶靠水上交易度日，早已練就一身河上掌舵的好身手。", "time": "10:00", "title": "丹嫩莎朵歐式水上市場"}, {"address": "", "duration": "約1小時", "maps": "https://share.google/JIjVemHHG6zxzNN8W", "note": "", "reason": "泰國傳統料理。", "time": "12:00", "title": "午餐：Kwan Damnoen Restaurant"}, {"address": "", "duration": "約90分鐘", "maps": "", "note": "", "reason": "水上市場沿岸自由活動時間，可搭乘傳統長尾船遊覽。", "time": "13:00", "title": "搭船・自由活動"}, {"address": "", "duration": "約1.5小時車程（88公里）", "maps": "", "note": "", "reason": "", "time": "15:00", "title": "前往曼谷飯店 Check-in"}, {"address": "泰國曼谷昭披耶河畔", "duration": "約3.5小時（21:00前返回飯店）", "maps": "https://share.google/CVJzlpMaH0UdFzUEl", "note": "自由參加，請當日16:00前向領隊確認以便安排遊覽車", "reason": "斥資超過540億泰銖打造的極奢華購物與文化地標，集結泰國各地小吃與米其林推薦美食，是曼谷最新的購物與文化朝聖地。", "time": "17:30", "title": "自由行：ICONSIAM 暹羅天地"}]}, "04": {"bonus": [{"maps": "https://share.google/F9e1Iku1foNlXNLbi", "meta": "與飯店共構的 Fortune Town 購物中心對面，步行可達", "tags": ["購物", "美食"], "title": "Central Rama 9 購物中心"}, {"maps": "https://share.google/5thQN9im6LoPiVZJl", "meta": "搭乘MRT 藍線至Wat Mangkon 站，從1 號或3 號出口出站，步行約7 至9 分鐘即達。", "tags": ["逛街", "文創", "小食"], "title": "嵩越路（Song Wat Road）"}, {"maps": "https://share.google/XlG5cyFyTHJujQ9Wy", "meta": "📍659 Chulalongkorn 4 Alley, Wang Mai, Pathum Wan, Bangkok 10330, Thailand ", "tags": ["蟹肉炒飯"], "title": "som som seafood bangkok"}, {"maps": "https://share.google/Qrwe07BEhU0lWHmfC", "meta": "📍113 Charat Mueang Alley, Rong Mueang, Pathum Wan, Bangkok 10330", "tags": ["媽媽麵"], "title": "Jeh O Chula"}], "date": "2026/10/29 (四)", "destination": "曼谷 Bangkok", "hotel": "曼谷拉差達安凡尼酒店 Avani Ratchada Bangkok Hotel", "meals": {"b": "飯店內自助式", "d": "自由行敬請自理", "l": "自由行敬請自理"}, "schedule": [{"address": "", "duration": "", "maps": "", "note": "", "reason": "", "time": "08:00", "title": "飯店自助早餐"}, {"address": "", "duration": "全天", "maps": "", "note": "午、晚餐敬請自理", "reason": "今天放慢腳步，輕鬆自在地享受曼谷的魅力與悠閒。可以在飯店中體驗游泳池、健身房等休閒設施，也可以去附近的時尚百貨街購物、市區漫遊、寺廟文化與商場夜市。", "time": "全天", "title": "曼谷自由逛：商場巡禮 × 經典古蹟 × 文創漫活 × 伴手禮採購"}]}, "05": {"bonus": [{"maps": "", "meta": "📍125 Ratchadaphisek Rd, Din Daeng, Bangkok 10400", "tags": ["購物", "伴手禮"], "title": "Big C Place Ratchadaphisek"}], "date": "2026/10/30 (五)", "destination": "曼谷 Bangkok-台灣 Taiwan", "hotel": "溫暖的家", "meals": {"b": "飯店內自助式", "d": "機上套餐", "l": "機場敬請自理"}, "schedule": [{"address": "", "duration": "", "maps": "", "note": "", "reason": "早晨吃完豐盛早餐後，飯店內自由探索。", "time": "08:00", "title": "飯店自助早餐・自由探索"}, {"address": "", "duration": "", "maps": "", "note": "依約定時間集合", "reason": "", "time": "12:00", "title": "專車前往曼谷機場"}, {"address": "曼谷國際機場 → 桃園國際機場", "duration": "3小時35分・20:40 抵達", "maps": "", "note": "泰國時間比台灣慢1小時", "reason": "奧理科技泰國華欣・曼谷之旅，將繼續留在回憶中懷念著，讓這次美妙的旅程畫下美妙的句點。", "time": "16:05", "title": "BR-706 飛返桃園"}]}}, "destination": "Hua Hin · Bangkok, Thailand", "info": [{"body": "2026/10/26（一）上午07:30前，桃園國際機場第二航廈長榮航空團體櫃檯集合（確認櫃檯編號，出發當日領隊會在群組通知）。", "tag": "集合資訊", "title": "集合時間 / 地點"}, {"body": "華欣｜Avani+ Hua Hin Resort（1499 Phet Kasem Rd, Cha-am, Phetchaburi 77110, Thailand・+66 32 898 989）\n曼谷｜Avani Ratchada Bangkok Hotel（1 Rachadaphisek Road, Dindaeng, Bangkok 10400, Thailand・+66 2 641 1500）", "tag": "飯店資訊", "title": "住宿"}, {"body": "去程 BR-201｜10/26 09:40 台北桃園 → 12:35 曼谷\n回程 BR-706｜10/30 16:05 曼谷 → 20:40 台北桃園\n（泰國時間比台灣慢1小時）", "tag": "航班資訊", "title": "去程 / 回程"}, {"body": "全程專車接送，往返機場、飯店與各景點皆由遊覽車安排，下車前請記得隨身攜帶重要物品。", "tag": "交通方式", "title": "當地交通"}, {"body": "A團領隊｜吳佳穎 Kelly　0922-224-156\nB團領隊｜劉筱莉 Lili　0970-064-180\n上順旅遊窗口｜駱玉英小姐　02-2517-1157 #211", "tag": "緊急聯絡", "title": "領隊與緊急電話"}, {"body": "貨幣為泰銖（Baht），1銖=100沙丹。約 1 USD ≈ 33.08 泰銖，1元台幣 ≈ 1.03 泰銖。機場兌換手續費較高，建議於市區換匯或多人一起兌換。", "tag": "當地貨幣", "title": "匯率與付款"}, {"body": "泰國屬熱帶性氣候。10月氣溫約24–32°C，仍偶有降雨，建議攜帶夏季棉質衣物、薄外套與輕便雨具。", "tag": "天氣", "title": "氣候提醒"}, {"body": "泰國電壓為220V，插座為兩腳圓形或扁形，建議自備轉接頭；多數飯店不提供牙刷、牙膏、拖鞋等備品，請自行攜帶。", "tag": "插座", "title": "電壓與插頭"}, {"body": "入境泰國須於出發前72小時內上網申請「TDAC 泰國數位入境卡」（tdac.immigration.go.th，需以英文填寫），並保留確認 QR Code。海關會隨機抽查，每人身上須準備2萬泰銖等值現金。電子煙在泰國屬非法，切勿攜帶。", "tag": "注意事項", "title": "泰國入境提醒"}, {"body": "託運行李長寬高總和需203公分以下，經濟艙限重23公斤/1件；手提行李不得超過7公斤，尺寸54×38×23公分內。液體、膠狀、噴霧類須放託運，不可手提超過100ml。行動電源每人限攜帶2個，須手提隨身、不可託運。", "tag": "行李建議", "title": "打包與行李限制"}, {"body": "行李小費每件20泰銖；房間小費每房20–50泰銖；領隊/導遊/司機小費建議每人每天約200元，全程5天共約3000元。", "tag": "旅遊小費", "title": "小費參考"}, {"body": "已為每位貴賓投保旅行責任險新台幣500萬元及意外醫療險20萬元（依旅行業管理規則第五十三條之規定辦理）。", "tag": "保險需知", "title": "旅遊保險"}], "lyrics": {"01": {"text": "[Chorus]\nHello, สวัสดีค่ะ\nYeah, you know my wrist is cold\nGot this timepiece from Geneva\nIf you know it, then you know\nI’m that bitch on your TV\nAnd my Ferrari, indigo\nLa Lalisa, la diva\nสวัสดีค่ะ, there she go (Hey)\n\n\nHello, สวัสดีค่ะ\nYeah, you know my wrist is cold\nGot this timepiece from Geneva\nIf you know it, then you know\nI’m that bitch on your TV\nAnd my Ferrari, indigo\nLa Lalisa, la diva\nสวัสดีค่ะ, there she go (Hey)\n\n\n[Interlude]\nHold on, let me, hold on, let me, hold on, let me—\n\n\n[Verse 1]\nWho let this bitch out of the cage?\nMove that (Hey), get out of the way\nMurder, killed that, I’m on the case\nHands up (Hey), now lock me away\nChampionship, they call me the one\nWhip my shit like it’s a salon\nI throw fits like highlight clips\nI aim, I hit, blow smoke off the gun (Hey)\n\nHow many does it take?\nHow many does it take?\nHow many, how many tryna ride my wave?\nHow many want my name?\nHow many, how many got discipline?\nHow many comprehend?\nHow many that been where I been?\nHow many get me from within’?\n\n\n[Pre-Chorus]\nCatch me in my feelings, up in the sky\nBaby, there’s no ceiling in my mind (Ah)\n\n\n[Chorus]\nHello, สวัสดีค่ะ\nYeah, you know my wrist is cold\nGot this timepiece from Geneva\nIf you know it, then you know\nI’m that bitch on your TV\nAnd my Ferrari, indigo\nLa Lalisa, la diva\nสวัสดีค่ะ, there she go (Hey)\n\n\nHello, สวัสดีค่ะ\nYeah, you know my wrist is cold\nGot this timepiece from Geneva\nIf you know it, then you know\nI’m that bitch on your TV\nAnd my Ferrari, indigo\nLa Lalisa, la diva\nสวัสดีค่ะ, there she go (Hey)\n\n\n[Verse 2]\nBang-bang, Bangkok bang\nScreaming, “เก่งมาก” with my gang\nBaht be going in my bank\n‘Til I’m going out with a bag\nThai’d up like I’m booked, booked\nI’m like hold up, let me cook, cook\nPut a show on when I show up\nDoing donuts in a Tuk-Tuk\nStep on the terrace (Yeah), the rooftop\nHop in the back of the chop, chop\nLike are you coming or what? (Yeah)\nI’m like the tick on your clock, waking them up\nYes, I’m a trouble fanatic (Yeah)\nLive for the shock like I’m anaphylactic\nIs it too much? Am I overdramatic? (Yeah)\nSick, I’m too sick, better call me a medic\n\n\n[Pre-Chorus]\nCatch me in my feelings, up in the sky\nBaby, there’s no ceiling in my mind (Ah)\n\n\n[Chorus]\nHello, สวัสดีค่ะ\nYeah, you know my wrist is cold\nGot this timepiece from Geneva\nIf you know it, then you know\nI’m that bitch on your TV\nAnd my Ferrari, indigo\nLa Lalisa, la diva\nสวัสดีค่ะ, there she go (Hey)\n\nHello, สวัสดีค่ะ\nYeah, you know my wrist is cold\nGot this timepiece from Geneva\nIf you know it, then you know\nI’m that bitch on your TV\nAnd my Ferrari, indigo\nLa Lalisa, la diva\nสวัสดีค่ะ, there she go (Hey)\n\n\n[Outro]\nHello, สวัสดีค่ะ\nHello, สวัสดีค่ะ\nHello, สวัสดีค่ะ\nHello, สวัสดีค่ะ, there she go (Hey)\n\nSpecial Guest：Lalisa", "times": [null, 0.881731, 1.930628, 3.792197, 5.652471, 7.246944, 8.830865, 10.691577, 12.553256, null, null, 14.527661, 15.855782, 17.45227, 19.313995, 20.898089, 22.492068, 24.35344, 25.950076, null, null, null, 28.371816, null, null, null, 31.828748, 33.42406, 35.284665, 36.867834, 38.46309, 40.324015, 41.920107, 43.782297, null, 45.488576, 47.084229, 48.413813, 50.540429, 51.858174, 53.984464, 55.581789, 57.174535, null, null, null, 58.611873, 65.258045, null, null, null, 72.956714, 74.286859, 75.881369, 78.009195, 79.336372, 80.920932, 82.782241, 84.378406, null, null, 86.631248, 87.960522, 89.556277, 91.15021, 93.012966, 94.609299, 96.470529, 98.053606, null, null, null, 100.208505, 102.070164, 103.66531, 105.526472, 107.122577, 108.983166, 110.046661, 112.163809, 113.758739, 115.08658, 116.949309, 118.545045, 121.056375, 122.118961, 123.265807, 124.33096, null, null, null, 127.239038, 133.874444, null, null, null, 141.586301, 142.915534, 144.499971, 146.093632, 147.955536, 149.286138, 151.411455, 153.008191, null, 155.188799, 156.516814, 158.112599, 159.707726, 161.559319, 163.153126, 165.014253, 166.609772, null, null, null, 169.014288, 172.205735, 175.927843, 179.637972, null, null]}, "02": {"text": "[Intro]\nOoh…\n今晚的海，比平常更加美麗\nMaybe is the sunset...\nMaybe is you and me\n\n[Verse 1]\n海風吹來，輕輕地\n夕陽正慢慢沉入海平面\n坐在彼此身旁，看著海浪\n沒有任何事情需要急著去做\n\n手裡握著冰涼的酒\n身旁是熟悉的笑聲\n如果時間可以停在這裡\n我想，我一定不想回去\n\n[Pre-Chorus]\n今晚讓心放輕一點\n讓海浪的聲音帶著我們走\n不用去想明天的事\n只要擁有現在，就已經足夠\n\n[Chorus]\n華欣與我們\n在今晚金色的天空之下\n有海、有音樂、有笑容\n還有此刻就在身邊的幸福\n\n華欣與我們\nLet the sunset stay a little longer\n舉起酒杯，輕輕碰在一起\n今晚，就讓心好好休息\n\n[Verse 2]\n有人喝醉，有人在跳舞\n有人一直忙著拍照\n有人笑到完全停不下來\n但每一個人，都一樣幸福\n\n海浪依然一次次拍向岸邊\n月亮慢慢升上天空\n如果回憶也會有聲音\n今晚一定會充滿我們的笑聲\n\n[Rap]\nYeah\nHua Hin breeze, got me feeling so light\nGolden sky turning everything right\nNo meetings, no calls, no deadlines tonight\nJust my people, cold drinks, ocean side\n\n把這個畫面好好放進心裡\n因為有一天，我們一定會想念\n五天也許太短\n但這份回憶會陪我們很久\n\n[Chorus]\n華欣與我們\n在今晚金色的天空之下\n有海、有音樂、有笑容\n還有此刻就在身邊的幸福\n\n華欣與我們\nLet the sunset stay a little longer\n舉起酒杯，輕輕碰在一起\n今晚，就讓心好好休息\n\n[Outro]\nOoh…\n華欣與我們\n今晚哪裡都不用去\nStay right here…\nJust a little longer\n\nProducer：Lexi\nLyricist：Lexi\nComposer：Lexi\nMusic Video Producer：Adam", "times": [null, 1.351898, 4.264933, 7.188578, 10.644821, null, null, 26.054437, 28.171877, 32.158216, 34.818302, null, 38.275146, 40.921472, 44.113543, 47.303472, null, null, 51.026393, 53.93843, 56.86347, 59.523222, null, null, 62.703702, 64.564263, 65.628066, 70.679578, null, 74.389542, 76.781859, 81.57128, 84.484132, null, null, 99.460952, 100.777429, 102.637758, 105.563117, null, 111.401946, 113.792776, 117.516705, 119.90833, null, null, 122.761322, 124.620749, 126.970995, 130.160105, 132.555298, null, 136.265605, 139.190387, 141.849847, 144.78202, null, null, 147.343461, 149.289165, 154.063201, 156.189832, null, 159.647131, 161.241824, 166.283919, 169.347626, null, null, 184.036981, 184.833894, 188.810407, 193.597676, 195.722592, null, 203.25960697798422, 209.2791472613506, 213.79689313199188, 217.56064387966225]}, "03": {"text": "[Intro]\nYeah yeah!\n今晚誰還能喝？\nOcard!\nLet’s go!\n\n[Verse 1]\n今晚不用數到底喝了幾杯\n也不用問現在究竟幾點\n音樂正在大聲播放\n心跳正在加速\n而我們正在享受今晚\n\n跟身邊的人碰一杯\n也跟遠方的朋友碰一杯\n不管今晚到底喝了多少\n今晚我們一起醉\n\n[Pre-Chorus]\n一杯！\n兩杯！\n三杯！\n還要不要？\n\n今晚的快樂\n就要滿到溢出來！\n\n[Chorus]\n乾杯到最後！\n讓快樂全部滿出來\nDrink up! Drink up!\n今晚沒有「少喝一點」\n\n乾杯到最後！\n讓我們的笑聲一路傳到天空\nOne more! One more!\n今晚我們才不會這麼容易回家\n\nHey!\n乾杯！\nHey!\n乾杯！\n今晚我們都很快樂\n這樣就夠了！\n\n[Verse 2]\n有人站在舞池中央跳舞\n有人每一句歌詞都唱錯\n有人說「這是最後一杯」\n結果又叫了三杯\n\n不用知道到底是誰先開始\n也不用知道到底誰喝得比較醉\n因為今晚每個人都一樣\n都在燈光和音樂裡瘋狂\n\n[Rap]\nOkay!\nEverybody hands up, put your glass in the sky\nWe came here for the memories, not to ask why\nFrom Hua Hin to Bangkok, we ride\nSame crew, same vibe, all night\n\n不要把快樂藏起來\n今晚就全部釋放\n明天的事情明天再說\n今晚就給它喝到盡興！\n\n[Bridge]\n如果明天我們什麼都記不得\n至少今晚我們真的很快樂\n如果手機裡的照片已經塞滿\n那就一張都捨不得刪\n\n[Chorus]\n乾杯到最後！\n讓快樂全部滿出來\nDrink up! Drink up!\n今晚沒有「少喝一點」\n\n乾杯到最後！\n讓我們的笑聲一路傳到天空\nOne more! One more!\n今晚我們才不會這麼容易回家\n\n[Outro]\nOcard!\nThailand!\nBangkok!\nHua Hin!\n\nProducer：Lexi\nLyricist：Lexi\nComposer：Lexi\nMusic Video Producer：Adam", "times": [null, 0, 3.450714, 5.577226, 6.641123, null, null, 8.225578, 10.353626, 12.600914, 14.462146, 17.121771, null, 19.779082, 22.163276, 25.087406, 26.949742, null, null, 29.074219, 29.873, 30.934978, 32.264213, null, 35.445376, 36.774522, null, null, 38.336929, 40.716836, 43.112252, 44.973308, null, 47.897925, 49.747364, 52.672066, 54.533702, null, 58.098994, null, 62.874681, null, 67.268399, 68.056558, null, null, 69.469101, 70.533805, 74.789684, 76.371261, null, 77.968501, 79.2986, 80.627815, 84.085184, null, null, 86.342033, 86.624638, 89.283733, 91.410378, 93.528025, null, 95.919484, 98.578015, 101.768179, 103.098504, null, null, 106.276219, 107.872556, 110.533163, 112.925554, null, null, 116.578026, 118.428298, 122.682852, 124.011064, null, 127.203386, 129.59334, 131.977259, 133.838176, null, null, 137.5729529596542, 138.1420044523228, 140.18273790200146, 141.51271407635176, null, 143.28395123533164, 144.43981109065672, 145.82111857165722, 147.0749555350071]}, "04": {"text": "[Intro]\nYeah…\n今晚我們不用急著回去\nBangkok lights, we’re alive\nOcard in the city tonight\n\n[Verse 1]\n行李還放在飯店，心卻早已進入夜店\n從華欣一路到曼谷，我們都要一起走\n這幾天，就讓它成為最美的回憶\n\n車裡音樂越來越大聲\n我們的笑聲比音樂還要響\n不知道明天會變成什麼樣\n但今晚，什麼都不用想\n\n[Pre-Chorus]\n舉起手中的杯子\n敬即將發生的一切\n今晚沒有「累」這個字\n只有一句——Let’s go!\n\n[Chorus]\nBangkok tonight, tonight\n讓心隨著霓虹燈一起漂流\nDrink it up, feel alive\n今晚就讓快樂滿到溢出來\n\nBangkok tonight, tonight\n跳到忘記現在究竟幾點\nWe’re young, we’re wild, we’re free\n今晚只有我們，還有這座城市\n\n[Verse 2]\n街上的燈光映在眼裡\n我們的笑聲從來沒有小聲過\n一杯、兩杯、再來一杯\n今晚誰還管到底喝了多少\n\n不需要任何理由\n也不需要任何答案\n只要朋友就在身旁\n這樣的今晚就已經足夠\n\n[Rap]\nYeah\nBangkok city, neon on my face\nFive days, one team, we’re setting the pace\nNo drama, no stress, leave it at the door\nTonight we celebrate, tomorrow ask for more\n\n舉起酒杯，用力碰在一起\n讓所有疲憊都在今晚消失\n好好記住今晚\n因為這樣的時刻，不是每天都有\n\n[Chorus]\nBangkok tonight, tonight\n讓心隨著霓虹燈一起漂流\nDrink it up, feel alive\n今晚就讓快樂滿到溢出來\n\nBangkok tonight, tonight\n跳到忘記現在究竟幾點\nWe’re young, we’re wild, we’re free\n今晚只有我們，還有這座城市\n\n[Outro]\n曼谷今夜……\n不需要去想明天\nJust one more drink\nJust one more memory\n\nProducer：Lexi\nLyricist：Lexi\nComposer：Lexi\nMusic Video Producer：Adam", "times": [null, 2.886936, 6.076769, 9.267379, 11.916374, null, null, 13.776429, 15.372157, 16.966154, null, 21.211327, 22.272241, 24.400608, 25.67232, null, null, 28.332549, 30.712803, 34.170896, 37.627107, null, null, 42.76233, 44.887754, 49.408973, 52.321604, null, 56.575799, 58.968628, 62.681254, 66.137892, null, null, 69.990088, 71.586112, 73.711985, 75.29765, null, 77.954412, 79.54988, 81.411705, 82.210055, null, null, 84.273783, 85.072675, 87.201153, 87.997442, 89.062301, null, 92.455791, 93.43166, 100.066065, 103.521468, null, null, 114.945231, 117.072596, 121.050177, 124.156633, null, 128.409482, 131.068103, 134.791909, 138.237253, null, null, 143.288371, 146.746044, 151.519708, 153.914932, null, 159.9823425783536, 161.48476261033753, 162.98959320898985, 164.99555537101008]}, "05": {"text": "[Intro]\n五天……\n過得比想像中還要快\n但有些回憶\n會一直留在我們心裡\n\n[Verse 1]\n第一天，我們帶著笑容一起出發\n不知道這五天會改變些什麼\n從原本只是一起工作的同事\n變成了一起擁有故事的人\n\n我們一起看了日出\n也一起看了夕陽\n看見彼此疲憊的樣子\n也在喝醉的夜裡一起大笑\n\n[Pre-Chorus]\n時間也許還是會繼續往前\n但這些畫面不會消失\n今晚的笑聲\n會一直留在我們心裡\n\n[Chorus]\n忘不了的五天\n是我們一起擁有的五天\n從曼谷一路到華欣\n每一個瞬間，都會留在心裡\n\n忘不了的五天\n即使明天還是要回去工作\n如果有一天我們想念彼此\n就播放這首歌，再一次回到這裡\n\n[Verse 2]\n手機裡也許有上千張照片\n但沒有任何一張能完整保存當時的感覺\n因為最珍貴的\n其實是那個站在身旁的人\n\n有些夜晚我們一起唱歌\n有些夜晚我們一起大笑\n有些夜晚我們喝酒喝到忘記時間\n但每一個夜晚，都有它的意義\n\n[Rap]\nYeah\nFive days, but it feels like a lifetime\nDifferent stories, but tonight they align\nWhen we go back to the city and the daily grind\nKeep these memories somewhere deep in your mind\n\n如果有一天我們各自走向不同的地方\n如果有一天一切都變得不一樣\n請記得，曾經有這麼一次\n我們在泰國的天空下，一起大笑\n\n[Bridge]\n謝謝每一個笑聲\n謝謝每一段回憶\n不知道我們下一次什麼時候還能再來\n但今晚……\n我會把它好好記住\n\n[Final Chorus]\n忘不了的五天\n是我們一起擁有的五天\n從華欣一路到曼谷\n每一個瞬間，都會留在心裡\n\n忘不了的五天\n即使明天還是要回去工作\n如果有一天我們想念彼此\n就播放這首歌，再一次回到這裡\n\n[Outro]\n五天……\n一份回憶\n一個團隊\n一個故事\n\nThailand…\n我們一定會再回來\n\nOoh…\n\nProducer：Lexi\nLyricist：Lexi\nComposer：Lexi\nMusic Video Producer：Adam", "times": [null, 14.010718, 15.339169, 17.556058, 19.683102, null, null, 25.78642, 28.712151, 31.63627, 34.029615, null, 37.740105, 40.399801, 43.324446, 46.942762, null, null, 49.5682, 53.025688, 56.214775, 58.064297, null, null, 64.18102, 66.838917, 70.018924, 72.145298, null, 76.134211, 78.792741, 81.706391, 84.898104, null, null, 93.129081, 95.786883, 98.179148, 101.63599, null, 104.816845, 106.415757, 107.475128, 110.931435, null, null, 115.972782, 116.505092, 119.694218, 122.620287, 125.532119, null, 128.45901, 131.115706, 133.775817, 136.433168, null, null, 140.678477, 143.336057, 146.528595, 149.442061, 151.302, null, null, 164.584976, 167.510112, 170.689625, 173.61388, null, 178.665431, 181.058574, 184.239257, 187.163552, null, null, 190.088455, 193.011003, 196.191172, 199.115762, null, 201.076096, 202.924797, null, null, null, 204.85178977999263, 204.85178977999263, 204.85178977999263, 204.85178977999263]}}},
+    assetsCap: null,
+    dbCap: null,
+    docRef: null,
+    pendingSlot: null,
+    _dbReady: null,
+    init: function(){
+      if(!(window.claude && window.claude.use)){ this._dbReady = Promise.resolve(); return; }
+      var self = this;
+      Promise.resolve(window.claude.use("assets")).then(function(cap){
+        self.assetsCap = cap;
+        if(cap){ document.body.classList.add("can-upload"); }
+      })["catch"](function(){});
+      this._dbReady = Promise.resolve(window.claude.use("db")).then(function(cap){
+        self.dbCap = cap;
+        if(!cap) return;
+        self.docRef = cap.doc("images/site");
+        self.docRef.onSnapshot(function(snap){
+          var body = snap.exists ? snap.data() : null;
+          self.data = (body && body.images) || {};
+          self.trackNames = (body && body.trackNames) || {};
+          self.content = (body && body.content) || {};
+          applyAllImages();
+          applyDestination();
+          // Guard against clobbering an in-progress edit: this fires on
+          // EVERY change to the shared doc, including a completely
+          // unrelated one made by another viewer (or this viewer's own
+          // photo upload elsewhere) while this viewer happens to be
+          // mid-edit on Info or About. renderInfo()/renderAbout() force-
+          // close their editor and wipe its unsaved textarea content, so
+          // without this check a delivery landing at the wrong moment
+          // silently discards whatever the viewer had just typed but not
+          // yet saved -- making it look like saving "needs a second try"
+          // once they notice and have to redo it.
+          if(Nav.current === "info" && !InfoEditor.active){ renderInfo(); }
+          if(Nav.current === "about" && !AboutEditor.active){ renderAbout(); }
+          if(typeof LyricsPanel !== "undefined" && LyricsPanel.open && !LyricsPanel.editing){ LyricsPanel.renderRead(); }
+        }, function(){ /* store unreachable: keep placeholders */ });
+      })["catch"](function(){ /* leave docRef null: saves below become no-ops */ });
+    },
+    /** Resolves once the db capability grant has settled (available or
+     * not) — every save* method below waits on this first. Without it,
+     * a save attempted in the brief window right after page-load,
+     * before `window.claude.use("db")` has resolved and `docRef` is
+     * assigned, would silently no-op (docRef still null) and the
+     * viewer's edit would be discarded with no error — showing back the
+     * old content and making it look like saving "needs a second try".
+     * Waiting here instead queues that save until the capability is
+     * ready, so it actually persists on the first attempt.
+     *
+     * This also guards against a second failure mode: `_dbReady` itself
+     * only ever RESOLVES (see init() above — its own .catch swallows any
+     * rejection so a denied/failed grant still resolves with docRef left
+     * null). The one case that isn't covered is `window.claude.use("db")`
+     * never settling at all -- no resolve, no reject, e.g. a dropped
+     * message to the host app. Before this timeout, ready() would then
+     * hang forever and so would every save built on it: the Save button
+     * would stay stuck on its disabled state indefinitely, with no error
+     * and no way to retry short of reloading the page -- exactly what
+     * "clicking Save does nothing" looks like from the editing side. */
+    ready: function(){
+      var base = this._dbReady || Promise.resolve();
+      return new Promise(function(resolve, reject){
+        var settled = false;
+        var timer = setTimeout(function(){
+          if(settled) return;
+          settled = true;
+          reject(new Error("儲存逾時（連線可能中斷），請重新整理頁面後再試一次"));
+        }, 8000);
+        base.then(function(v){
+          if(settled) return;
+          settled = true;
+          clearTimeout(timer);
+          resolve(v);
+        }, function(err){
+          if(settled) return;
+          settled = true;
+          clearTimeout(timer);
+          reject(err);
+        });
+      });
+    },
+    /** Normalizes both the current `{id,type}` shape and a bare legacy
+     * id string (in case an older version of this page wrote one) to
+     * `{id, type}` or null. */
+    entry: function(key){
+      var v = this.data[key];
+      if(!v) return null;
+      if(typeof v === "string") return { id: v, type: "" };
+      return v.id ? v : null;
+    },
+    url: function(key){
+      var e = this.entry(key);
+      return e ? mediaSrc(e.id) : null;
+    },
+    save: function(key, id, type){
+      var self = this;
+      return this.ready().then(function(){
+        if(!self.docRef) return Promise.resolve();
+        var value = { id: id, type: type || "" };
+        var patch = {images:{}};
+        patch.images[key] = value;
+        return self.docRef.get().then(function(snap){
+          return snap.exists ? self.docRef.update(patch) : self.docRef.set(patch);
+        }).then(function(){
+          // self.data may be a frozen snapshot object handed to us by the
+          // db capability's onSnapshot listener -- never mutate it in
+          // place (that's what threw "Cannot assign to read only
+          // property"). Always build a fresh plain object instead.
+          var data = Object.assign({}, self.data);
+          data[key] = value;
+          self.data = data;
+        });
+      });
+    },
+    /** The per-day track-name override the viewer typed in, if any,
+     * otherwise the given fallback (the global placeholder name). */
+    trackNameFor: function(code, fallback){
+      var v = this.trackNames && this.trackNames[code];
+      return (v && v.trim()) ? v : fallback;
+    },
+    saveTrackName: function(code, name){
+      var self = this;
+      return this.ready().then(function(){
+        if(!self.docRef) return Promise.resolve();
+        var patch = {trackNames:{}};
+        patch.trackNames[code] = name;
+        return self.docRef.get().then(function(snap){
+          return snap.exists ? self.docRef.update(patch) : self.docRef.set(patch);
+        }).then(function(){
+          // Same frozen-snapshot hazard as save() above -- copy first.
+          var trackNames = Object.assign({}, self.trackNames);
+          trackNames[code] = name;
+          self.trackNames = trackNames;
+        });
+      });
+    },
+    /** A plain top-level text override under content, e.g. the global
+     * destination string shown on Home / Album / About. */
+    textFor: function(key, fallback){
+      var v = this.content[key];
+      return (typeof v === "string" && v.trim()) ? v : fallback;
+    },
+    saveText: function(key, value){
+      var self = this;
+      return this.ready().then(function(){
+        if(!self.docRef) return Promise.resolve();
+        var patch = {content:{}};
+        patch.content[key] = value;
+        return self.docRef.get().then(function(snap){
+          return snap.exists ? self.docRef.update(patch) : self.docRef.set(patch);
+        }).then(function(){
+          // self.content comes from the db capability's snapshot object,
+          // which can be frozen -- mutating a key on it directly throws
+          // "Cannot assign to read only property". Replace the whole
+          // object with a fresh shallow copy instead.
+          var next = Object.assign({}, self.content);
+          next[key] = value;
+          self.content = next;
+        });
+      });
+    },
+    /** The full override object a viewer saved for one day's code, or
+     * null when that day is still showing its built-in content. */
+    dayOverride: function(code){
+      return (this.content.days && this.content.days[code]) || null;
+    },
+    saveDay: function(code, payload){
+      var self = this;
+      return this.ready().then(function(){
+        if(!self.docRef) return Promise.resolve();
+        var patch = {content:{days:{}}};
+        patch.content.days[code] = payload;
+        return self.docRef.get().then(function(snap){
+          return snap.exists ? self.docRef.update(patch) : self.docRef.set(patch);
+        }).then(function(){
+          // Same frozen-snapshot hazard -- never mutate self.content or
+          // self.content.days in place; rebuild both as fresh objects.
+          var days = Object.assign({}, self.content.days);
+          days[code] = payload;
+          self.content = Object.assign({}, self.content, { days: days });
+        });
+      });
+    },
+    /** The full override list for the Travel Info cards, or null when
+     * still showing the built-in list. */
+    infoOverride: function(){
+      return Array.isArray(this.content.info) ? this.content.info : null;
+    },
+    saveInfo: function(list){
+      var self = this;
+      return this.ready().then(function(){
+        if(!self.docRef) return Promise.resolve();
+        var patch = {content:{info:list}};
+        return self.docRef.get().then(function(snap){
+          return snap.exists ? self.docRef.update(patch) : self.docRef.set(patch);
+        }).then(function(){
+          // Same frozen-snapshot hazard -- rebuild self.content fresh.
+          self.content = Object.assign({}, self.content, { info: list });
+        });
+      });
+    },
+    /** The full override object for the About-page copy, or null when
+     * still showing ABOUT_DEFAULTS. */
+    saveAbout: function(payload){
+      var self = this;
+      return this.ready().then(function(){
+        if(!self.docRef) return Promise.resolve();
+        var patch = {content:{about:payload}};
+        return self.docRef.get().then(function(snap){
+          return snap.exists ? self.docRef.update(patch) : self.docRef.set(patch);
+        }).then(function(){
+          // ROOT CAUSE of the "About save won't submit" report: self.content
+          // is (or can become, via the onSnapshot listener racing this same
+          // write) a frozen snapshot object from the db capability. Writing
+          // self.content.about = payload directly throws "Cannot assign to
+          // read only property 'about' of object" in strict mode -- which
+          // surfaced to the viewer as the new V17 error banner, but the
+          // save had actually already landed in the database by this point
+          // (docRef.update/set above succeeded); only this local mirror
+          // update was failing. Never mutate self.content in place --
+          // always replace it with a fresh shallow copy.
+          self.content = Object.assign({}, self.content, { about: payload });
+        });
+      });
+    },
+    /** Lyrics are original/self-made per day's track, so there is no
+     * built-in default — an empty string means "no lyrics added yet".
+     * Returns { text, times }: `times` is a per-line seconds array from
+     * the tap-to-sync editor (null entries = that line isn't synced),
+     * or null when the lyrics have never been synced — legacy plain-
+     * string saves normalize to { text: <that string>, times: null }. */
+    lyricsFor: function(code){
+      var v = this.content.lyrics && this.content.lyrics[code];
+      if(v == null) return { text: "", times: null };
+      if(typeof v === "string") return { text: v, times: null };
+      return { text: v.text || "", times: Array.isArray(v.times) ? v.times : null };
+    },
+    /** `payload` is either a plain string (no sync) or { text, times }. */
+    saveLyrics: function(code, payload){
+      var self = this;
+      return this.ready().then(function(){
+        if(!self.docRef) return Promise.resolve();
+        var patch = {content:{lyrics:{}}};
+        patch.content.lyrics[code] = payload;
+        return self.docRef.get().then(function(snap){
+          return snap.exists ? self.docRef.update(patch) : self.docRef.set(patch);
+        }).then(function(){
+          // Same frozen-snapshot hazard -- rebuild both objects fresh.
+          var lyrics = Object.assign({}, self.content.lyrics);
+          lyrics[code] = payload;
+          self.content = Object.assign({}, self.content, { lyrics: lyrics });
+        });
+      });
+    }
+  };
+
+  function deepClone(obj){ return JSON.parse(JSON.stringify(obj)); }
+  function escapeHtml(s){
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function(c){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+    });
+  }
+
+  /* =====================================================================
+     SAVE FEEDBACK — shared by every self-serve editor (Day / Info / About
+     / Lyrics). Before this, a failed or hung save gave literally no
+     visual signal: the Save button had no [disabled] styling at all, and
+     a rejected save only logged to devtools console (which the person
+     editing never sees) — from their side, clicking Save just silently
+     did nothing, indistinguishable from a genuine "it isn't submitting"
+     bug. withSavingUI() below fixes three things at once: (1) the button
+     visibly flips to a "儲存中…" label the instant it's clicked, so a
+     click always visibly registers; (2) a real error message renders
+     next to the button instead of only going to console; (3) Images
+     .ready() (below) now times out instead of waiting forever on a
+     capability grant that never resolves, so a save can no longer hang
+     indefinitely with the button stuck disabled and no way to retry. */
+  function showSaveError(root, message){
+    if(!root) return;
+    var box = root.querySelector(".editor-save-error");
+    if(!box){
+      box = document.createElement("div");
+      box.className = "editor-save-error";
+      var actions = root.querySelector(".editor-actions");
+      if(actions && actions.parentNode){ actions.parentNode.insertBefore(box, actions.nextSibling); }
+      else { root.appendChild(box); }
+    }
+    box.textContent = message;
+    box.hidden = false;
+  }
+  function clearSaveError(root){
+    if(!root) return;
+    var box = root.querySelector(".editor-save-error");
+    if(box) box.hidden = true;
+  }
+  /** Wraps a save promise with the visible "儲存中…" / error-message UI
+   * described above. `btn` may be null (still works, just skips the
+   * button-text swap). Re-throws on failure so the caller's own .catch
+   * can skip re-rendering, but the error is already shown by this point. */
+  function withSavingUI(btn, root, promise){
+    var originalLabel = btn ? btn.textContent : null;
+    if(btn){ btn.disabled = true; btn.textContent = "儲存中…"; }
+    clearSaveError(root);
+    return promise.then(function(result){
+      return result;
+    })["catch"](function(err){
+      console.error("save failed", err);
+      var msg = (err && err.message) ? err.message : "儲存失敗，請檢查網路連線後再試一次。";
+      showSaveError(root, "⚠ " + msg);
+      if(btn){ btn.disabled = false; btn.textContent = originalLabel; }
+      throw err;
+    });
+  }
+  /** Renders `text` into `container` as one or more <p> elements: a
+   * blank line (two+ newlines) starts a new paragraph, and a single
+   * newline inside a paragraph becomes a <br>. Built with DOM calls
+   * (not innerHTML) so the text is never treated as markup. */
+  function renderParagraphs(container, text){
+    if(!container) return;
+    container.innerHTML = "";
+    String(text == null ? "" : text).split(/\n{2,}/).forEach(function(block){
+      block = block.trim();
+      if(!block) return;
+      var p = document.createElement("p");
+      block.split("\n").forEach(function(line, i){
+        if(i > 0) p.appendChild(document.createElement("br"));
+        p.appendChild(document.createTextNode(line));
+      });
+      container.appendChild(p);
+    });
+  }
+
+  /** Merges a day's built-in content with any viewer-saved override
+   * (a whole-object override, so add/remove/reorder just works). */
+  function effectiveDay(day){
+    var ov = Images.dayOverride(day.code);
+    if(!ov) return day;
+    return {
+      code: day.code, label: day.label, placeholder: false,
+      date: ov.date != null ? ov.date : day.date,
+      destination: ov.destination != null ? ov.destination : day.destination,
+      hotel: ov.hotel != null ? ov.hotel : day.hotel,
+      meals: ov.meals || day.meals,
+      schedule: ov.schedule || day.schedule,
+      bonus: ov.bonus || day.bonus
+    };
+  }
+  function effectiveInfo(){ return Images.infoOverride() || TRIP.info; }
+  function effectiveDestination(){ return Images.textFor("destination", TRIP.destination); }
+  function effectiveAbout(){
+    var ov = Images.content.about;
+    var base = ABOUT_DEFAULTS;
+    function pick(k){ return (ov && typeof ov[k] === "string" && ov[k].trim()) ? ov[k] : base[k]; }
+    return { p1: pick("p1"), p2: pick("p2"), producedBy: pick("producedBy"), format: pick("format"), year: pick("year") };
+  }
+  function applyDestination(){
+    var dest = effectiveDestination();
+    ["home-dest","album-dest","about-dest"].forEach(function(id){
+      var el = document.getElementById(id);
+      if(el) el.textContent = dest;
+    });
+  }
+
+  function isTrackSlot(key){ return key.indexOf("track_") === 0; }
+
+  /** Accepts either a pasted Google Maps URL or a plain place name/search
+   * text in the same "maps" field, and always returns a working link. */
+  function mapsUrl(v){
+    v = (v || "").trim();
+    if(!v) return "";
+    return /^https?:\/\//i.test(v) ? v : "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(v);
+  }
+
+  function handleUploadClick(btn){
+    if(!Images.assetsCap || btn.disabled) return;
+    var slot = btn.getAttribute("data-slot");
+    if(!slot) return;
+    Images.pendingSlot = slot;
+    var input = document.getElementById("img-upload-input");
+    var accept = isTrackSlot(slot) ? "video/mp4,video/webm"
+      : slotAcceptsVideo(slot) ? "image/*,video/mp4,video/webm"
+      : "image/*";
+    input.setAttribute("accept", accept);
+    input.click();
+  }
+
+  function handleFileChosen(file){
+    var slot = Images.pendingSlot;
+    if(!slot || !file || !Images.assetsCap) return;
+    var btns = document.querySelectorAll('.upload-btn[data-slot="'+slot+'"]');
+    btns.forEach(function(b){ b.disabled = true; });
+    Images.assetsCap.upload(file).then(function(result){
+      return Images.save(slot, result.id, result.contentType);
+    }).then(function(){
+      applyAllImages();
+    })["catch"](function(err){
+      console.error("upload failed", slot, err && err.code, err && err.message);
+      flashUploadError(btns);
+    })["finally"](function(){
+      btns.forEach(function(b){ b.disabled = false; });
+    });
+  }
+
+  function flashUploadError(btns){
+    btns.forEach(function(b){
+      var span = b.querySelector("span");
+      var prev = span ? span.textContent : null;
+      if(span) span.textContent = "上傳失敗";
+      b.classList.add("upload-error");
+      setTimeout(function(){
+        if(span && prev !== null) span.textContent = prev;
+        b.classList.remove("upload-error");
+      }, 2200);
+    });
+  }
+
+  function applyAllImages(){
+    applyCoverImage();
+    if(Nav.current === "day"){ renderDay(); }
+    Player.renderTrack();
+  }
+
+  /** Shared show/hide between a CSS-background image container and its
+   * paired <video> element (for the Canvas-style looping clips). */
+  function applyMediaSlot(bgEl, videoEl, entry){
+    if(entry && isVideoType(entry.type) && videoEl){
+      bgEl.classList.remove("has-photo");
+      bgEl.style.removeProperty("--cover-url");
+      bgEl.classList.add("media-on");
+      if(videoEl.dataset.assetId !== entry.id){
+        videoEl.src = mediaSrc(entry.id);
+        videoEl.dataset.assetId = entry.id;
+      }
+      videoEl.hidden = false;
+      var p = videoEl.play();
+      if(p && p["catch"]){ p["catch"](function(){}); }
+    } else if(entry){
+      if(videoEl){ videoEl.hidden = true; videoEl.removeAttribute("src"); videoEl.removeAttribute("data-asset-id"); videoEl.load(); }
+      bgEl.style.setProperty("--cover-url", "url(" + mediaSrc(entry.id) + ")");
+      bgEl.classList.add("has-photo");
+      bgEl.classList.add("media-on");
+    } else {
+      if(videoEl){ videoEl.hidden = true; videoEl.removeAttribute("src"); videoEl.removeAttribute("data-asset-id"); videoEl.load(); }
+      bgEl.classList.remove("has-photo");
+      bgEl.classList.remove("media-on");
+      bgEl.style.removeProperty("--cover-url");
+    }
+  }
+
+  function applyCoverImage(){
+    var entry = Images.entry("home");
+    var bg = document.getElementById("home-cover-bg");
+    var art = document.getElementById("album-art");
+    applyMediaSlot(bg, document.getElementById("home-cover-video"), entry);
+    applyMediaSlot(art, document.getElementById("album-art-video"), entry);
+    document.body.classList.toggle("cover-set", !!entry);
+    var label = document.getElementById("cover-upload-label");
+    if(label) label.textContent = entry ? (isVideoType(entry.type) ? "更換動圖" : "更換封面圖") : "上傳封面圖／動圖";
+  }
+
+  /* =====================================================================
+     NAV — which view is showing
+  ===================================================================== */
+  var Nav = {
+    current:"home",
+    go:function(view, opts){
+      opts = opts || {};
+      var home = document.getElementById("view-home");
+      var chrome = document.getElementById("chrome");
+      if(view === "home"){
+        home.classList.add("active");
+        chrome.classList.remove("active");
+        this.current = "home";
+        return;
+      }
+      home.classList.remove("active");
+      chrome.classList.add("active");
+      ["album","day","group","info","about"].forEach(function(v){
+        document.getElementById("view-"+v).classList.toggle("active", v===view);
+      });
+      document.querySelectorAll("#topnav .nav-link").forEach(function(btn){
+        btn.classList.toggle("on", btn.dataset.goto === view);
+      });
+      this.current = view;
+      window.scrollTo({top:0, behavior: opts.instant ? "auto" : "smooth"});
+    }
+  };
+
+  /* =====================================================================
+     RENDER — builds DOM from TRIP data. No data lives in these functions.
+  ===================================================================== */
+  function renderTrackList(){
+    var list = document.getElementById("track-list");
+    list.innerHTML = "";
+    TRIP.days.forEach(function(rawDay, i){
+      var day = effectiveDay(rawDay);
+      var row = document.createElement("button");
+      row.className = "row" + (day.placeholder ? " placeholder" : "");
+      row.setAttribute("data-day", i);
+      row.innerHTML =
+        '<span class="num">'+day.code+'</span>' +
+        '<span class="rbody">' +
+          '<span class="rtitle">' + escapeHtml(day.label) + ' — ' + (day.placeholder ? "行程規劃中" : escapeHtml(day.destination)) + '</span>' +
+          '<span class="rmeta">' + escapeHtml(day.date) + ' · ' + day.schedule.length + ' 個行程' + (day.placeholder ? '<span class="badge">敬請期待</span>' : '') + '</span>' +
+        '</span>' +
+        '<svg class="rplay" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
+      row.addEventListener("click", function(){
+        openDay(i);
+      });
+      list.appendChild(row);
+    });
+    highlightActiveRow();
+  }
+  function highlightActiveRow(){
+    document.querySelectorAll("#track-list .row").forEach(function(r){
+      r.classList.toggle("active", Number(r.dataset.day) === Player.dayIndex);
+    });
+  }
+
+  function renderDayNav(){
+    var nav = document.getElementById("day-nav");
+    nav.innerHTML = "";
+    TRIP.days.forEach(function(day, i){
+      var p = document.createElement("button");
+      p.className = "pill" + (i===Player.dayIndex ? " active" : "");
+      p.textContent = "DAY " + day.code;
+      p.addEventListener("click", function(){ openDay(i); });
+      nav.appendChild(p);
+    });
+  }
+
+  function renderDay(){
+    DayEditor.active = false;
+    DayEditor.draft = null;
+    var rv0 = document.getElementById("day-readview"), ed0 = document.getElementById("day-editor");
+    if(rv0) rv0.hidden = false;
+    if(ed0){ ed0.hidden = true; ed0.innerHTML = ""; }
+    var editBtn0 = document.getElementById("day-edit-toggle");
+    if(editBtn0){ editBtn0.textContent = "✎ 編輯這天的行程"; editBtn0.classList.remove("editing"); }
+
+    var day = effectiveDay(TRIP.days[Player.dayIndex]);
+    document.getElementById("day-eyebrow").textContent = "TRACK " + day.code;
+    document.getElementById("day-title").textContent = day.label;
+    document.getElementById("day-meta").textContent = day.date + " · " + day.destination +
+      (day.hotel ? " · 住宿：" + day.hotel : "");
+    var mealsEl = document.getElementById("day-meals");
+    if(mealsEl){
+      var m = day.meals || {};
+      var chips = [];
+      if(m.b) chips.push('<span><b>早餐</b>'+escapeHtml(m.b)+'</span>');
+      if(m.l) chips.push('<span><b>午餐</b>'+escapeHtml(m.l)+'</span>');
+      if(m.d) chips.push('<span><b>晚餐</b>'+escapeHtml(m.d)+'</span>');
+      mealsEl.innerHTML = chips.join('');
+      mealsEl.hidden = chips.length === 0;
+    }
+    var heroEl = document.getElementById("day-hero");
+    var heroVideo = document.getElementById("day-hero-video");
+    var heroEntry = Images.entry("day_hero_" + day.code);
+    applyMediaSlot(heroEl, heroVideo, heroEntry);
+    heroEl.style.background = heroEntry ? "" : DAY_THEMES[Player.dayIndex % DAY_THEMES.length];
+    var heroUpload = document.getElementById("day-hero-upload");
+    heroUpload.setAttribute("data-slot", "day_hero_" + day.code);
+    document.getElementById("day-hero-upload-label").textContent =
+      heroEntry ? (isVideoType(heroEntry.type) ? "更換動圖" : "更換背景") : "上傳背景／動圖";
+    document.getElementById("day-prev").disabled = false;
+    document.getElementById("day-next").disabled = false;
+
+    var tl = document.getElementById("day-timeline");
+    tl.innerHTML = "";
+    day.schedule.forEach(function(item, idx){
+      var el = document.createElement("div");
+      el.className = "t-item";
+      var hasDetail = !!(item.address || item.reason || item.duration || item.note);
+      var schedKey = "sched_" + day.code + "_" + idx;
+      var schedUrl = Images.url(schedKey);
+      var schedPhotoStyle = schedUrl ? ' style="background-image:url('+schedUrl+');background-size:cover;background-position:center;"' : '';
+      el.innerHTML =
+        '<span class="t-dot"></span>' +
+        '<div class="t-body">' +
+          '<button class="t-row"' + (hasDetail ? '' : ' disabled') + '>' +
+            '<span class="t-time">'+escapeHtml(item.time)+'</span>' +
+            '<span class="t-title">'+escapeHtml(item.title)+'</span>' +
+            (hasDetail ? '<svg class="t-chevron" viewBox="0 0 24 24" fill="currentColor"><path d="M9 6l6 6-6 6"/></svg>' : '') +
+          '</button>' +
+          (hasDetail ? (
+            '<div class="t-panel"><div class="t-panel-inner">' +
+              '<div class="t-photo photo-slot'+(schedUrl?' has-photo':'')+'"'+schedPhotoStyle+'>' +
+                '<button class="upload-btn" type="button" data-slot="'+schedKey+'">' +
+                  '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 5h3l1.5-2h7L17 5h3a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2zm8 3.5A4.5 4.5 0 1 0 12 17a4.5 4.5 0 0 0 0-8.5z"/></svg>' +
+                  '<span>'+(schedUrl?'更換照片':'上傳照片')+'</span>' +
+                '</button>' +
+              '</div>' +
+              '<div class="t-facts">' +
+                (item.address ? '<span><b>地址</b> '+escapeHtml(item.address)+'</span>' : '') +
+                (item.duration ? '<span><b>建議停留</b> '+escapeHtml(item.duration)+'</span>' : '') +
+              '</div>' +
+              (item.maps ? '<a class="maps-btn" href="'+escapeHtml(mapsUrl(item.maps))+'" target="_blank" rel="noopener">📍 Google Maps</a><br>' : '') +
+              (item.note ? '<div class="t-note">⚠ '+escapeHtml(item.note)+'</div>' : '') +
+              (item.reason ? '<p class="t-why">'+escapeHtml(item.reason)+'</p>' : '') +
+            '</div></div>'
+          ) : '') +
+        '</div>';
+      tl.appendChild(el);
+      if(hasDetail){
+        el.querySelector(".t-row").addEventListener("click", function(){
+          var wasOpen = el.classList.contains("open");
+          tl.querySelectorAll(".t-item.open").forEach(function(o){
+            o.classList.remove("open");
+            var p = o.querySelector(".t-panel");
+            if(p) p.style.maxHeight = "";
+          });
+          if(!wasOpen){
+            var panel = el.querySelector(".t-panel");
+            // scrollHeight reflects the panel's full, unclipped content
+            // height even while it's still collapsed (max-height:0 +
+            // overflow:hidden don't affect it) — so this is the exact
+            // height to animate to, whatever the photo + text add up to.
+            if(panel) panel.style.maxHeight = panel.scrollHeight + "px";
+            el.classList.add("open");
+          }
+        });
+      }
+    });
+
+    var bg = document.getElementById("day-bonus");
+    bg.innerHTML = "";
+    day.bonus.forEach(function(b, bidx){
+      var bonusKey = "bonus_" + day.code + "_" + bidx;
+      var bonusUrl = Images.url(bonusKey);
+      var bonusArtStyle = bonusUrl ? ' style="background-image:linear-gradient(rgba(10,11,8,0),rgba(10,11,8,.15)),url('+bonusUrl+');background-size:cover;background-position:center;"' : '';
+      var card = document.createElement("div");
+      card.className = "bonus-card";
+      card.innerHTML =
+        '<div class="bonus-art photo-slot'+(bonusUrl?' has-photo':'')+'"'+bonusArtStyle+'>' +
+          '<button class="upload-btn" type="button" data-slot="'+bonusKey+'">' +
+            '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 5h3l1.5-2h7L17 5h3a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2zm8 3.5A4.5 4.5 0 1 0 12 17a4.5 4.5 0 0 0 0-8.5z"/></svg>' +
+            '<span>'+(bonusUrl?'更換照片':'上傳照片')+'</span>' +
+          '</button>' +
+        '</div>' +
+        '<div class="bonus-foot">' +
+          '<p class="bonus-eyebrow">ENCORE '+escapeHtml(b.code || String(bidx+1))+'</p>' +
+          '<p class="bonus-title">'+escapeHtml(b.title)+'</p>' +
+          '<p class="bonus-meta">'+escapeHtml(b.meta)+'</p>' +
+          (b.maps ? '<a class="maps-btn" href="'+escapeHtml(mapsUrl(b.maps))+'" target="_blank" rel="noopener">📍 Google Maps</a>' : '') +
+          '<div class="bonus-tags">'+(b.tags||[]).map(function(t){return '<span class="tag">'+escapeHtml(t)+'</span>';}).join('')+'</div>' +
+        '</div>';
+      bg.appendChild(card);
+    });
+
+    renderDayNav();
+    highlightActiveRow();
+  }
+
+  function renderInfo(){
+    InfoEditor.active = false;
+    InfoEditor.draft = null;
+    var rv0 = document.getElementById("info-readview"), ed0 = document.getElementById("info-editor");
+    if(rv0) rv0.hidden = false;
+    if(ed0){ ed0.hidden = true; ed0.innerHTML = ""; }
+    var editBtn0 = document.getElementById("info-edit-toggle");
+    if(editBtn0){ editBtn0.textContent = "✎ 編輯旅遊資訊"; editBtn0.classList.remove("editing"); }
+
+    var grid = document.getElementById("info-grid");
+    grid.innerHTML = "";
+    effectiveInfo().forEach(function(item){
+      var c = document.createElement("div");
+      c.className = "info-card";
+      c.innerHTML =
+        '<span class="info-tag">'+escapeHtml(item.tag)+'</span>' +
+        '<h3>'+escapeHtml(item.title)+'</h3>' +
+        '<p>'+escapeHtml(item.body).replace(/\n/g,'<br>')+'</p>';
+      grid.appendChild(c);
+    });
+  }
+
+  function renderAbout(){
+    AboutEditor.active = false;
+    AboutEditor.draft = null;
+    var rv0 = document.getElementById("about-readview"), ed0 = document.getElementById("about-editor");
+    if(rv0) rv0.hidden = false;
+    if(ed0){ ed0.hidden = true; ed0.innerHTML = ""; }
+    var editBtn0 = document.getElementById("about-edit-toggle");
+    if(editBtn0){ editBtn0.textContent = "✎ 編輯關於頁"; editBtn0.classList.remove("editing"); }
+
+    var a = effectiveAbout();
+    renderParagraphs(document.getElementById("about-p1"), a.p1);
+    renderParagraphs(document.getElementById("about-p2"), a.p2);
+    document.getElementById("about-produced").textContent = a.producedBy;
+    document.getElementById("about-format").textContent = a.format;
+    document.getElementById("about-year").textContent = a.year;
+  }
+
+  function renderGroup(){
+    var rosterHtml = "";
+    [{label:"A 團", list:GROUP.rosterA}, {label:"B 團", list:GROUP.rosterB}].forEach(function(g){
+      rosterHtml += '<div class="roster-card"><h3>'+escapeHtml(g.label)+'（'+g.list.length+' 人）</h3>';
+      g.list.forEach(function(p){
+        rosterHtml +=
+          '<div class="roster-row">' +
+            '<span class="r-no">'+p.no+'</span>' +
+            '<span class="r-name">'+escapeHtml(p.name)+'</span>' +
+            (p.diet ? '<span class="r-diet">'+escapeHtml(p.diet)+'</span>' : '') +
+          '</div>';
+      });
+      rosterHtml += '</div>';
+    });
+    var rosterGrid = document.getElementById("roster-grid");
+    if(rosterGrid) rosterGrid.innerHTML = rosterHtml;
+
+    var seatingHtml = "";
+    GROUP.seating.forEach(function(block){
+      seatingHtml += '<div class="group-section"><h2>'+escapeHtml(block.title)+'</h2><div class="seating-grid">';
+      block.tables.forEach(function(t){
+        seatingHtml += '<div class="seating-table"><h4>'+escapeHtml(t.label)+'</h4>';
+        t.seats.forEach(function(s){
+          var parts = s.split("｜");
+          seatingHtml += '<div class="seating-seat"><b>'+escapeHtml(parts[0])+'</b><span>'+escapeHtml(parts[1]||"")+'</span></div>';
+        });
+        seatingHtml += '</div>';
+      });
+      seatingHtml += '</div></div>';
+    });
+    var seatingRoot = document.getElementById("seating-sections");
+    if(seatingRoot) seatingRoot.innerHTML = seatingHtml;
+  }
+
+  function openDay(i){
+    Player.goToDay(i);
+    Nav.go("day");
+    renderDay();
+  }
+
+  /* =====================================================================
+     DAY EDITOR — self-serve add / edit / delete for one day's schedule,
+     bonus tracks, date, destination, hotel and meals. Saves the whole
+     day object as one override under content.days[code] (see Images).
+  ===================================================================== */
+  var DayEditor = {
+    active:false, draft:null,
+    open:function(){
+      var day = TRIP.days[Player.dayIndex];
+      var ov = Images.dayOverride(day.code);
+      this.draft = ov ? deepClone(ov) : deepClone({
+        date: day.date, destination: day.destination, hotel: day.hotel || "",
+        meals: day.meals || {b:"",l:"",d:""}, schedule: day.schedule, bonus: day.bonus
+      });
+      if(!this.draft.meals) this.draft.meals = {b:"",l:"",d:""};
+      this.active = true;
+      document.getElementById("day-readview").hidden = true;
+      var ed = document.getElementById("day-editor");
+      ed.hidden = false;
+      var btn = document.getElementById("day-edit-toggle");
+      if(btn){ btn.textContent = "✕ 取消編輯"; btn.classList.add("editing"); }
+      this.render();
+    },
+    close:function(){
+      renderDay(); // renderDay() itself resets DayEditor state + DOM visibility
+    },
+    syncFromDom:function(){
+      var root = document.getElementById("day-editor");
+      if(!root || !this.draft) return;
+      var g = function(sel){ return root.querySelector(sel); };
+      if(g('[data-f="date"]')) this.draft.date = g('[data-f="date"]').value;
+      if(g('[data-f="destination"]')) this.draft.destination = g('[data-f="destination"]').value;
+      if(g('[data-f="hotel"]')) this.draft.hotel = g('[data-f="hotel"]').value;
+      if(g('[data-f="meal-b"]')) this.draft.meals.b = g('[data-f="meal-b"]').value;
+      if(g('[data-f="meal-l"]')) this.draft.meals.l = g('[data-f="meal-l"]').value;
+      if(g('[data-f="meal-d"]')) this.draft.meals.d = g('[data-f="meal-d"]').value;
+      root.querySelectorAll('[data-sched-row]').forEach(function(row, i){
+        var d = DayEditor.draft.schedule[i];
+        if(!d) return;
+        d.time = row.querySelector('[data-f="time"]').value;
+        d.title = row.querySelector('[data-f="title"]').value;
+        d.address = row.querySelector('[data-f="address"]').value;
+        d.duration = row.querySelector('[data-f="duration"]').value;
+        d.note = row.querySelector('[data-f="note"]').value;
+        d.reason = row.querySelector('[data-f="reason"]').value;
+        d.maps = row.querySelector('[data-f="maps"]').value;
+      });
+      root.querySelectorAll('[data-bonus-row]').forEach(function(row, i){
+        var b = DayEditor.draft.bonus[i];
+        if(!b) return;
+        b.title = row.querySelector('[data-f="title"]').value;
+        b.meta = row.querySelector('[data-f="meta"]').value;
+        b.tagsText = row.querySelector('[data-f="tags"]').value;
+        b.maps = row.querySelector('[data-f="maps"]').value;
+      });
+    },
+    addSchedule:function(){
+      this.syncFromDom();
+      this.draft.schedule.push({time:"", title:"", address:"", duration:"", note:"", reason:"", maps:""});
+      this.render();
+    },
+    removeSchedule:function(i){
+      this.syncFromDom();
+      this.draft.schedule.splice(i,1);
+      this.render();
+    },
+    addBonus:function(){
+      this.syncFromDom();
+      this.draft.bonus.push({title:"", meta:"", tagsText:"", maps:""});
+      this.render();
+    },
+    removeBonus:function(i){
+      this.syncFromDom();
+      this.draft.bonus.splice(i,1);
+      this.render();
+    },
+    save:function(){
+      this.syncFromDom();
+      var day = TRIP.days[Player.dayIndex];
+      var payload = {
+        date: this.draft.date, destination: this.draft.destination, hotel: this.draft.hotel,
+        meals: this.draft.meals,
+        schedule: this.draft.schedule,
+        bonus: this.draft.bonus.map(function(b){
+          return { title:b.title, meta:b.meta, maps:b.maps||"", tags:(b.tagsText||"").split(",").map(function(s){return s.trim();}).filter(Boolean) };
+        })
+      };
+      var root = document.getElementById("day-editor");
+      var btn = document.getElementById("day-editor-save");
+      withSavingUI(btn, root, Images.saveDay(day.code, payload)).then(function(){
+        renderDay();
+      })["catch"](function(){ /* error already shown by withSavingUI */ });
+    },
+    render:function(){
+      var root = document.getElementById("day-editor");
+      var d = this.draft;
+      var html = '';
+      html += '<div class="editor-block"><div class="editor-grid2">';
+      html += '<label class="editor-field"><span>日期</span><input type="text" data-f="date" value="'+escapeHtml(d.date)+'"></label>';
+      html += '<label class="editor-field"><span>地點</span><input type="text" data-f="destination" value="'+escapeHtml(d.destination)+'"></label>';
+      html += '<label class="editor-field"><span>住宿</span><input type="text" data-f="hotel" value="'+escapeHtml(d.hotel||"")+'"></label>';
+      html += '<label class="editor-field"><span>早餐</span><input type="text" data-f="meal-b" value="'+escapeHtml(d.meals.b||"")+'"></label>';
+      html += '<label class="editor-field"><span>午餐</span><input type="text" data-f="meal-l" value="'+escapeHtml(d.meals.l||"")+'"></label>';
+      html += '<label class="editor-field"><span>晚餐</span><input type="text" data-f="meal-d" value="'+escapeHtml(d.meals.d||"")+'"></label>';
+      html += '</div></div>';
+
+      html += '<div class="editor-section"><h3>Schedule 行程項目</h3>';
+      d.schedule.forEach(function(item, i){
+        html += '<div class="editor-row" data-sched-row>';
+        html += '<div class="editor-row-grid">';
+        html += '<label class="editor-field narrow"><span>時間</span><input type="text" data-f="time" value="'+escapeHtml(item.time)+'"></label>';
+        html += '<label class="editor-field"><span>標題</span><input type="text" data-f="title" value="'+escapeHtml(item.title)+'"></label>';
+        html += '<label class="editor-field"><span>地址</span><input type="text" data-f="address" value="'+escapeHtml(item.address||"")+'"></label>';
+        html += '<label class="editor-field narrow"><span>建議停留</span><input type="text" data-f="duration" value="'+escapeHtml(item.duration||"")+'"></label>';
+        html += '<label class="editor-field"><span>注意事項</span><input type="text" data-f="note" value="'+escapeHtml(item.note||"")+'"></label>';
+        html += '<label class="editor-field"><span>Google Maps 連結／地名</span><input type="text" data-f="maps" value="'+escapeHtml(item.maps||"")+'"></label>';
+        html += '<label class="editor-field wide"><span>介紹／推薦原因</span><textarea data-f="reason" rows="2">'+escapeHtml(item.reason||"")+'</textarea></label>';
+        html += '</div>';
+        html += '<button type="button" class="editor-del" data-action="del-sched" data-i="'+i+'">✕ 刪除這個行程項目</button>';
+        html += '</div>';
+      });
+      html += '<button type="button" class="btn editor-add" data-action="add-sched">+ 新增行程項目</button>';
+      html += '</div>';
+
+      html += '<div class="editor-section"><h3>Encore 自由行推薦</h3>';
+      d.bonus.forEach(function(b, i){
+        var tagsText = b.tagsText != null ? b.tagsText : (b.tags||[]).join(", ");
+        html += '<div class="editor-row" data-bonus-row>';
+        html += '<div class="editor-row-grid">';
+        html += '<label class="editor-field"><span>名稱</span><input type="text" data-f="title" value="'+escapeHtml(b.title)+'"></label>';
+        html += '<label class="editor-field"><span>資訊</span><input type="text" data-f="meta" value="'+escapeHtml(b.meta||"")+'"></label>';
+        html += '<label class="editor-field"><span>Google Maps 連結／地名</span><input type="text" data-f="maps" value="'+escapeHtml(b.maps||"")+'"></label>';
+        html += '<label class="editor-field wide"><span>標籤（逗號分隔）</span><input type="text" data-f="tags" value="'+escapeHtml(tagsText)+'"></label>';
+        html += '</div>';
+        html += '<button type="button" class="editor-del" data-action="del-bonus" data-i="'+i+'">✕ 刪除這個推薦</button>';
+        html += '</div>';
+      });
+      html += '<button type="button" class="btn editor-add" data-action="add-bonus">+ 新增自由行推薦</button>';
+      html += '</div>';
+
+      html += '<div class="editor-actions">';
+      html += '<button type="button" class="btn primary" id="day-editor-save" data-action="save">儲存變更</button>';
+      html += '<button type="button" class="btn" data-action="cancel">取消</button>';
+      html += '</div>';
+      root.innerHTML = html;
+    }
+  };
+
+  /* =====================================================================
+     INFO EDITOR — self-serve add / edit / delete for the Travel Info
+     cards, plus the global destination string. Saves the whole list
+     as one override under content.info (see Images).
+  ===================================================================== */
+  var InfoEditor = {
+    active:false, draft:null,
+    open:function(){
+      this.draft = { destination: effectiveDestination(), items: deepClone(effectiveInfo()) };
+      this.active = true;
+      document.getElementById("info-readview").hidden = true;
+      var ed = document.getElementById("info-editor");
+      ed.hidden = false;
+      var btn = document.getElementById("info-edit-toggle");
+      if(btn){ btn.textContent = "✕ 取消編輯"; btn.classList.add("editing"); }
+      this.render();
+    },
+    close:function(){
+      renderInfo();
+    },
+    syncFromDom:function(){
+      var root = document.getElementById("info-editor");
+      if(!root || !this.draft) return;
+      var destEl = root.querySelector('[data-f="destination"]');
+      if(destEl) this.draft.destination = destEl.value;
+      root.querySelectorAll('[data-info-row]').forEach(function(row, i){
+        var it = InfoEditor.draft.items[i];
+        if(!it) return;
+        it.tag = row.querySelector('[data-f="tag"]').value;
+        it.title = row.querySelector('[data-f="title"]').value;
+        it.body = row.querySelector('[data-f="body"]').value;
+      });
+    },
+    add:function(){
+      this.syncFromDom();
+      this.draft.items.push({tag:"", title:"", body:""});
+      this.render();
+    },
+    remove:function(i){
+      this.syncFromDom();
+      this.draft.items.splice(i,1);
+      this.render();
+    },
+    save:function(){
+      this.syncFromDom();
+      var root = document.getElementById("info-editor");
+      var btn = document.getElementById("info-editor-save");
+      withSavingUI(btn, root, Promise.all([
+        Images.saveText("destination", this.draft.destination),
+        Images.saveInfo(this.draft.items)
+      ])).then(function(){
+        renderInfo();
+        applyDestination();
+      })["catch"](function(){ /* error already shown by withSavingUI */ });
+    },
+    render:function(){
+      var root = document.getElementById("info-editor");
+      var d = this.draft;
+      var html = '';
+      html += '<div class="editor-block">';
+      html += '<label class="editor-field"><span>目的地名稱（顯示在首頁、專輯與 About 頁）</span><input type="text" data-f="destination" value="'+escapeHtml(d.destination)+'"></label>';
+      html += '</div>';
+      html += '<div class="editor-section"><h3>Travel Notes 項目</h3>';
+      d.items.forEach(function(it, i){
+        html += '<div class="editor-row" data-info-row>';
+        html += '<div class="editor-row-grid">';
+        html += '<label class="editor-field narrow"><span>分類</span><input type="text" data-f="tag" value="'+escapeHtml(it.tag||"")+'"></label>';
+        html += '<label class="editor-field"><span>標題</span><input type="text" data-f="title" value="'+escapeHtml(it.title||"")+'"></label>';
+        html += '<label class="editor-field wide"><span>內容</span><textarea data-f="body" rows="3">'+escapeHtml(it.body||"")+'</textarea></label>';
+        html += '</div>';
+        html += '<button type="button" class="editor-del" data-action="del-info" data-i="'+i+'">✕ 刪除這個項目</button>';
+        html += '</div>';
+      });
+      html += '<button type="button" class="btn editor-add" data-action="add-info">+ 新增項目</button>';
+      html += '</div>';
+      html += '<div class="editor-actions">';
+      html += '<button type="button" class="btn primary" id="info-editor-save" data-action="save">儲存變更</button>';
+      html += '<button type="button" class="btn" data-action="cancel">取消</button>';
+      html += '</div>';
+      root.innerHTML = html;
+    }
+  };
+
+  /* =====================================================================
+     ABOUT EDITOR — self-serve edit for the About-page copy and credits
+     (Location stays bound to the shared destination field, edited from
+     the Info editor). Saves the whole object under content.about.
+  ===================================================================== */
+  var AboutEditor = {
+    active:false, draft:null,
+    open:function(){
+      this.draft = deepClone(effectiveAbout());
+      this.active = true;
+      document.getElementById("about-readview").hidden = true;
+      var ed = document.getElementById("about-editor");
+      ed.hidden = false;
+      var btn = document.getElementById("about-edit-toggle");
+      if(btn){ btn.textContent = "✕ 取消編輯"; btn.classList.add("editing"); }
+      this.render();
+    },
+    close:function(){
+      renderAbout();
+    },
+    save:function(){
+      var root = document.getElementById("about-editor");
+      var payload = {
+        p1: root.querySelector('[data-f="p1"]').value,
+        p2: root.querySelector('[data-f="p2"]').value,
+        producedBy: root.querySelector('[data-f="producedBy"]').value,
+        format: root.querySelector('[data-f="format"]').value,
+        year: root.querySelector('[data-f="year"]').value
+      };
+      var btn = document.getElementById("about-editor-save");
+      withSavingUI(btn, root, Images.saveAbout(payload)).then(function(){
+        renderAbout();
+      })["catch"](function(){ /* error already shown by withSavingUI */ });
+    },
+    render:function(){
+      var root = document.getElementById("about-editor");
+      var d = this.draft;
+      var html = '';
+      html += '<div class="editor-block">';
+      html += '<label class="editor-field wide"><span>第一段文字（換行空一行＝分段）</span><textarea data-f="p1" rows="8">'+escapeHtml(d.p1)+'</textarea></label>';
+      html += '<label class="editor-field wide"><span>第二段文字（換行空一行＝分段）</span><textarea data-f="p2" rows="8">'+escapeHtml(d.p2)+'</textarea></label>';
+      html += '</div>';
+      html += '<div class="editor-block editor-grid2">';
+      html += '<label class="editor-field"><span>Produced by</span><input type="text" data-f="producedBy" value="'+escapeHtml(d.producedBy)+'"></label>';
+      html += '<label class="editor-field"><span>Format</span><input type="text" data-f="format" value="'+escapeHtml(d.format)+'"></label>';
+      html += '<label class="editor-field"><span>Year</span><input type="text" data-f="year" value="'+escapeHtml(d.year)+'"></label>';
+      html += '</div>';
+      html += '<div class="editor-actions">';
+      html += '<button type="button" class="btn primary" id="about-editor-save" data-action="save">儲存變更</button>';
+      html += '<button type="button" class="btn" data-action="cancel">取消</button>';
+      html += '</div>';
+      root.innerHTML = html;
+    }
+  };
+
+  /* =====================================================================
+     LYRICS PANEL — slides up above the player bar to show (and, for
+     editors, add/edit) the lyrics of whichever day's track is loaded.
+     The music is self-made, so there's no built-in default lyrics text;
+     an empty string just means nobody has added them yet. Saved per day
+     code under content.lyrics (see Images.saveLyrics / lyricsFor).
+  ===================================================================== */
+  var LyricsPanel = {
+    open:false, editing:false, syncTimes:null, _activeTimes:null,
+    toggle:function(){ this.open ? this.close() : this.show(); },
+    show:function(){
+      this.open = true;
+      var panel = document.getElementById("lyrics-panel");
+      var backdrop = document.getElementById("lyrics-backdrop");
+      panel.hidden = false;
+      if(backdrop) backdrop.hidden = false;
+      requestAnimationFrame(function(){
+        panel.classList.add("open");
+        if(backdrop) backdrop.classList.add("open");
+      });
+      var btn = document.getElementById("lyrics-toggle-btn");
+      if(btn) btn.setAttribute("aria-expanded", "true");
+      this.showReadView();
+      this.renderRead();
+    },
+    /* Closing works three ways, none of which depend on the panel's own
+       scroll position or on hitting a small target: the header's close
+       icon (always visible — see the lyrics-head CSS comment), tapping
+       anywhere on the full-screen backdrop behind the panel, or Escape. */
+    close:function(){
+      this.open = false;
+      this.editing = false;
+      var panel = document.getElementById("lyrics-panel");
+      var backdrop = document.getElementById("lyrics-backdrop");
+      panel.classList.remove("open");
+      if(backdrop) backdrop.classList.remove("open");
+      var btn = document.getElementById("lyrics-toggle-btn");
+      if(btn) btn.setAttribute("aria-expanded", "false");
+      setTimeout(function(){
+        if(!LyricsPanel.open){ panel.hidden = true; if(backdrop) backdrop.hidden = true; }
+      }, 300);
+      this.showReadView();
+    },
+    /** Called whenever the loaded day/track changes (prev/next, day nav,
+     * or a remote save) — discards any in-progress edit so it can never
+     * land on the wrong day, and refreshes the visible text if open. */
+    refresh:function(){
+      this.editing = false;
+      this.syncTimes = null;
+      this.showReadView();
+      if(this.open) this.renderRead();
+    },
+    showReadView:function(){
+      var rv = document.getElementById("lyrics-readview"), ed = document.getElementById("lyrics-editor");
+      if(rv) rv.hidden = false;
+      if(ed) ed.hidden = true;
+      var btn = document.getElementById("lyrics-edit-toggle");
+      if(btn){ btn.textContent = "✎ 編輯歌詞"; btn.classList.remove("editing"); }
+    },
+    /** Renders the read view. When the saved lyrics have any synced line
+     * times, each line becomes its own element so it can be individually
+     * highlighted as playback passes it (see updateHighlight); otherwise
+     * falls back to one plain text block, same as before this feature. */
+    renderRead:function(){
+      var day = TRIP.days[Player.dayIndex];
+      var data = Images.lyricsFor(day.code);
+      var titleEl = document.getElementById("lyrics-song-title");
+      if(titleEl){
+        titleEl.textContent = (typeof Images !== "undefined") ? Images.trackNameFor(day.code, TRIP.trackName) : TRIP.trackName;
+      }
+      var textEl = document.getElementById("lyrics-text");
+      if(!textEl) return;
+      this._activeTimes = null;
+      if(!data.text){
+        textEl.innerHTML = "";
+        textEl.textContent = "這首歌還沒有加上歌詞。";
+        textEl.classList.add("empty");
+        return;
+      }
+      textEl.classList.remove("empty");
+      var hasSync = Array.isArray(data.times) && data.times.some(function(t){ return t != null; });
+      if(hasSync){
+        var lines = data.text.split("\n");
+        textEl.innerHTML = "";
+        lines.forEach(function(line){
+          var p = document.createElement("p");
+          p.className = "lyric-line";
+          p.textContent = line.length ? line : " ";
+          textEl.appendChild(p);
+        });
+        this._activeTimes = data.times;
+        this.updateHighlight();
+      } else {
+        textEl.textContent = data.text;
+      }
+    },
+    /** Highlights whichever synced line the current playback position has
+     * reached, and scrolls it into view. No-op when the panel is closed
+     * or the current song's lyrics were never synced. */
+    updateHighlight:function(){
+      if(!this.open || !this._activeTimes) return;
+      var textEl = document.getElementById("lyrics-text");
+      if(!textEl) return;
+      var elapsed = Player.elapsed;
+      var activeIdx = -1;
+      for(var i=0;i<this._activeTimes.length;i++){
+        if(this._activeTimes[i] != null && this._activeTimes[i] <= elapsed) activeIdx = i;
+      }
+      var kids = textEl.children;
+      for(var j=0;j<kids.length;j++){
+        kids[j].classList.toggle("active", j === activeIdx);
+      }
+      if(activeIdx >= 0 && kids[activeIdx]){
+        kids[activeIdx].scrollIntoView({block:"center", behavior:"smooth"});
+      }
+    },
+    openEditor:function(){
+      this.editing = true;
+      var day = TRIP.days[Player.dayIndex];
+      var rv = document.getElementById("lyrics-readview"), ed = document.getElementById("lyrics-editor");
+      if(rv) rv.hidden = true;
+      if(ed) ed.hidden = false;
+      var data = Images.lyricsFor(day.code);
+      var ta = document.getElementById("lyrics-textarea");
+      if(ta){ ta.value = data.text; }
+      var lines = data.text ? data.text.split("\n") : [];
+      this.syncTimes = lines.map(function(_, i){
+        return (Array.isArray(data.times) && data.times[i] != null) ? data.times[i] : null;
+      });
+      this.renderSyncRows();
+      this.updateSyncElapsed();
+      var btn = document.getElementById("lyrics-edit-toggle");
+      if(btn){ btn.textContent = "✕ 取消編輯"; btn.classList.add("editing"); }
+      if(ta) ta.focus();
+    },
+    /** Keeps the tap-to-sync row list aligned with the textarea as the
+     * viewer edits the lyrics text — matched by line position, so
+     * existing marks survive edits to other lines. */
+    onTextChanged:function(){
+      var ta = document.getElementById("lyrics-textarea");
+      var lines = ta && ta.value ? ta.value.split("\n") : [];
+      var old = this.syncTimes || [];
+      this.syncTimes = lines.map(function(_, i){ return old[i] != null ? old[i] : null; });
+      this.renderSyncRows();
+    },
+    renderSyncRows:function(){
+      var root = document.getElementById("lyrics-sync-rows");
+      if(!root) return;
+      var ta = document.getElementById("lyrics-textarea");
+      var lines = ta && ta.value ? ta.value.split("\n") : [];
+      if(!lines.length){
+        root.innerHTML = '<p class="lyrics-sync-empty">先在上面輸入歌詞，才能逐句標記時間點。</p>';
+        return;
+      }
+      var self = this;
+      root.innerHTML = lines.map(function(line, i){
+        var t = self.syncTimes ? self.syncTimes[i] : null;
+        return '<div class="lyrics-sync-row'+(t!=null?' marked':'')+'">' +
+          '<span class="lyrics-sync-linetext">'+escapeHtml(line || "（空白行）")+'</span>' +
+          '<span class="lyrics-sync-linetime">'+(t!=null ? fmtTime(t) : "未標記")+'</span>' +
+          '<button type="button" class="btn lyrics-sync-mark" data-action="mark-line" data-i="'+i+'">標記</button>' +
+          (t!=null ? '<button type="button" class="lyrics-sync-clear" data-action="clear-line" data-i="'+i+'" aria-label="清除這一句的時間點">✕</button>' : '') +
+        '</div>';
+      }).join('');
+    },
+    markLine:function(i){
+      if(!this.syncTimes) return;
+      this.syncTimes[i] = Player.elapsed;
+      this.renderSyncRows();
+      var rows = document.querySelectorAll('#lyrics-sync-rows .lyrics-sync-row');
+      var next = rows[i+1];
+      if(next) next.scrollIntoView({block:"nearest", behavior:"smooth"});
+    },
+    clearLine:function(i){
+      if(!this.syncTimes) return;
+      this.syncTimes[i] = null;
+      this.renderSyncRows();
+    },
+    resetSync:function(){
+      if(!this.syncTimes) return;
+      this.syncTimes = this.syncTimes.map(function(){ return null; });
+      this.renderSyncRows();
+    },
+    updateSyncPlayButton:function(){
+      var btn = document.getElementById("lyrics-sync-playpause");
+      if(btn) btn.textContent = Player.isPlaying ? "⏸ 暫停" : "▶ 播放";
+    },
+    updateSyncElapsed:function(){
+      if(!this.editing) return;
+      var el = document.getElementById("lyrics-sync-elapsed");
+      if(el) el.textContent = fmtTime(Player.elapsed);
+      this.updateSyncPlayButton();
+    },
+    save:function(){
+      var day = TRIP.days[Player.dayIndex];
+      var ta = document.getElementById("lyrics-textarea");
+      var text = ta ? ta.value : "";
+      var hasAnyTime = Array.isArray(this.syncTimes) && this.syncTimes.some(function(t){ return t != null; });
+      var payload = hasAnyTime ? { text: text, times: this.syncTimes.slice() } : text;
+      var root = document.getElementById("lyrics-editor");
+      var btn = document.querySelector('#lyrics-editor [data-action="save"]');
+      var self = this;
+      withSavingUI(btn, root, Images.saveLyrics(day.code, payload)).then(function(){
+        self.editing = false;
+        self.syncTimes = null;
+        self.showReadView();
+        self.renderRead();
+      })["catch"](function(){ /* error already shown by withSavingUI */ });
+    }
+  };
+
+  /* =====================================================================
+     TRACK NAME editing — lets the viewer rename the song shown for
+     whichever day is currently loaded in the player, self-serve, the
+     same way the photo/video upload buttons work.
+  ===================================================================== */
+  function startEditTrackName(){
+    if(!Images.docRef) return;
+    var p = document.getElementById("p-title");
+    var input = document.getElementById("p-title-input");
+    input.value = p.textContent;
+    p.hidden = true;
+    input.hidden = false;
+    input.focus();
+    input.select();
+  }
+  function commitEditTrackName(save){
+    var p = document.getElementById("p-title");
+    var input = document.getElementById("p-title-input");
+    if(input.hidden) return;
+    var day = TRIP.days[Player.dayIndex];
+    var val = input.value.trim();
+    input.hidden = true;
+    p.hidden = false;
+    if(save && val){
+      Images.saveTrackName(day.code, val).then(function(){ Player.renderTrack(); });
+    }
+  }
+
+  /* =====================================================================
+     WIRE UP
+  ===================================================================== */
+  document.addEventListener("DOMContentLoaded", function(){
+    Player.init({
+      bar: document.getElementById("player-bar"),
+      title: document.getElementById("p-title"),
+      sub: document.getElementById("p-sub"),
+      elapsed: document.getElementById("p-elapsed"),
+      total: document.getElementById("p-total"),
+      fill: document.getElementById("p-fill"),
+      playIcon: document.getElementById("p-play-icon"),
+      volFill: document.getElementById("vol-fill"),
+      media: document.getElementById("track-media"),
+      trackUploadBtn: document.getElementById("track-upload-btn"),
+      trackUploadLabel: document.getElementById("track-upload-label")
+    });
+
+    applyDestination();
+    renderTrackList();
+    renderInfo();
+    renderAbout();
+    renderGroup();
+    Images.init();
+
+    document.getElementById("day-edit-toggle").addEventListener("click", function(){
+      if(DayEditor.active){ DayEditor.close(); } else { DayEditor.open(); }
+    });
+    document.getElementById("day-editor").addEventListener("click", function(e){
+      var btn = e.target.closest("[data-action]");
+      if(!btn) return;
+      var action = btn.getAttribute("data-action");
+      if(action === "add-sched") DayEditor.addSchedule();
+      else if(action === "del-sched") DayEditor.removeSchedule(Number(btn.getAttribute("data-i")));
+      else if(action === "add-bonus") DayEditor.addBonus();
+      else if(action === "del-bonus") DayEditor.removeBonus(Number(btn.getAttribute("data-i")));
+      else if(action === "save") DayEditor.save();
+      else if(action === "cancel") DayEditor.close();
+    });
+
+    document.getElementById("info-edit-toggle").addEventListener("click", function(){
+      if(InfoEditor.active){ InfoEditor.close(); } else { InfoEditor.open(); }
+    });
+    document.getElementById("info-editor").addEventListener("click", function(e){
+      var btn = e.target.closest("[data-action]");
+      if(!btn) return;
+      var action = btn.getAttribute("data-action");
+      if(action === "add-info") InfoEditor.add();
+      else if(action === "del-info") InfoEditor.remove(Number(btn.getAttribute("data-i")));
+      else if(action === "save") InfoEditor.save();
+      else if(action === "cancel") InfoEditor.close();
+    });
+
+    document.getElementById("about-edit-toggle").addEventListener("click", function(){
+      if(AboutEditor.active){ AboutEditor.close(); } else { AboutEditor.open(); }
+    });
+    document.getElementById("about-editor").addEventListener("click", function(e){
+      var btn = e.target.closest("[data-action]");
+      if(!btn) return;
+      var action = btn.getAttribute("data-action");
+      if(action === "save") AboutEditor.save();
+      else if(action === "cancel") AboutEditor.close();
+    });
+
+    // Keep an open schedule-detail panel's height matching its real
+    // content if the viewport changes (rotation, resize, or the photo's
+    // aspect-ratio box changing width) — otherwise the panel could stay
+    // sized for the old layout and either clip content or leave a gap.
+    window.addEventListener("resize", function(){
+      var openPanel = document.querySelector(".t-item.open .t-panel");
+      if(openPanel) openPanel.style.maxHeight = openPanel.scrollHeight + "px";
+    });
+
+    document.getElementById("lyrics-toggle-btn").addEventListener("click", function(){ LyricsPanel.toggle(); });
+    document.getElementById("lyrics-close-btn").addEventListener("click", function(){ LyricsPanel.close(); });
+    var lyricsBackdropEl = document.getElementById("lyrics-backdrop");
+    if(lyricsBackdropEl) lyricsBackdropEl.addEventListener("click", function(){ LyricsPanel.close(); });
+    document.addEventListener("keydown", function(e){
+      if(e.key === "Escape" && LyricsPanel.open) LyricsPanel.close();
+    });
+    document.getElementById("lyrics-edit-toggle").addEventListener("click", function(){
+      if(LyricsPanel.editing){ LyricsPanel.showReadView(); LyricsPanel.renderRead(); LyricsPanel.editing = false; }
+      else { LyricsPanel.openEditor(); }
+    });
+    document.getElementById("lyrics-editor").addEventListener("click", function(e){
+      var btn = e.target.closest("[data-action]");
+      if(!btn) return;
+      var action = btn.getAttribute("data-action");
+      if(action === "save") LyricsPanel.save();
+      else if(action === "cancel"){ LyricsPanel.editing = false; LyricsPanel.syncTimes = null; LyricsPanel.showReadView(); LyricsPanel.renderRead(); }
+      else if(action === "sync-playpause"){ Player.show(); Player.toggle(); LyricsPanel.updateSyncPlayButton(); }
+      else if(action === "sync-reset-all") LyricsPanel.resetSync();
+      else if(action === "mark-line") LyricsPanel.markLine(Number(btn.getAttribute("data-i")));
+      else if(action === "clear-line") LyricsPanel.clearLine(Number(btn.getAttribute("data-i")));
+    });
+    document.getElementById("lyrics-textarea").addEventListener("input", function(){
+      LyricsPanel.onTextChanged();
+    });
+
+    document.addEventListener("click", function(e){
+      var btn = e.target.closest ? e.target.closest(".upload-btn") : null;
+      if(btn){ handleUploadClick(btn); }
+    });
+    document.getElementById("img-upload-input").addEventListener("change", function(e){
+      var file = e.target.files && e.target.files[0];
+      e.target.value = "";
+      if(file){ handleFileChosen(file); }
+    });
+
+    document.getElementById("play-album").addEventListener("click", function(){
+      Player.show();
+      Nav.go("album");
+      Player.play();
+    });
+
+    document.getElementById("btn-back-home").addEventListener("click", function(){
+      Nav.go("home");
+    });
+
+    document.querySelectorAll("#topnav .nav-link").forEach(function(btn){
+      btn.addEventListener("click", function(){ Nav.go(btn.dataset.goto); });
+    });
+    document.querySelectorAll("[data-goto]").forEach(function(btn){
+      if(btn.closest("#topnav")) return;
+      btn.addEventListener("click", function(){ Nav.go(btn.dataset.goto); });
+    });
+
+    document.getElementById("album-play").addEventListener("click", function(){
+      Player.show(); Player.play();
+    });
+
+    document.getElementById("day-prev").addEventListener("click", function(){ openDay(Player.dayIndex - 1); });
+    document.getElementById("day-next").addEventListener("click", function(){ openDay(Player.dayIndex + 1); });
+
+    document.getElementById("track-edit-btn").addEventListener("click", startEditTrackName);
+    var titleInput = document.getElementById("p-title-input");
+    titleInput.addEventListener("keydown", function(e){
+      if(e.key === "Enter"){ e.preventDefault(); commitEditTrackName(true); }
+      else if(e.key === "Escape"){ e.preventDefault(); commitEditTrackName(false); }
+    });
+    titleInput.addEventListener("blur", function(){ commitEditTrackName(true); });
+
+    document.getElementById("p-play").addEventListener("click", function(){
+      Player.show(); Player.toggle();
+    });
+    document.getElementById("p-prev").addEventListener("click", function(){
+      openDay(Player.dayIndex - 1);
+      if(Player.isPlaying){ Player.pause(); Player.play(); }
+    });
+    document.getElementById("p-next").addEventListener("click", function(){
+      openDay(Player.dayIndex + 1);
+      if(Player.isPlaying){ Player.pause(); Player.play(); }
+    });
+
+    var pbar = document.getElementById("p-bar");
+    pbar.addEventListener("click", function(e){
+      var r = pbar.getBoundingClientRect();
+      Player.seekTo(Math.min(1, Math.max(0, (e.clientX - r.left)/r.width)));
+    });
+    var vbar = document.getElementById("vol-bar");
+    if(vbar){
+      vbar.addEventListener("click", function(e){
+        var r = vbar.getBoundingClientRect();
+        Player.setVolume(Math.min(1, Math.max(0, (e.clientX - r.left)/r.width)));
+      });
+    }
+
+    /* subtle parallax on the home disc + noise layer */
+    var disc = document.getElementById("home-disc");
+    var noise = document.getElementById("home-noise");
+    window.addEventListener("mousemove", function(e){
+      if(Nav.current !== "home") return;
+      var x = (e.clientX / window.innerWidth - 0.5);
+      var y = (e.clientY / window.innerHeight - 0.5);
+      disc.style.transform = "translate(" + (x*14) + "px," + (-50 + y*6) + "%)".replace("%)", "%) translateY(0)");
+      disc.style.transform = "translateY(-50%) translate(" + (x*16) + "px," + (y*10) + "px)";
+      noise.style.transform = "translate(" + (x*-10) + "px," + (y*-10) + "px)";
+    }, {passive:true});
+  });
+})();
+</script>
+
+</body></html>
